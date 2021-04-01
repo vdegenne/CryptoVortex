@@ -1,12 +1,13 @@
-import { Klines } from "./klines";
+import { Kline } from "./klines";
 import pairs from './binance-pairs.json'
 import ms from 'ms'
+import fs from 'fs'
 import { round, wait } from "./util";
 import { fetchPairKlines } from "./binance";
 import { savePairInformation } from "./io";
 
-export type Pairs = {
-  [pair: string]: Klines[]
+export type PairsKlines = {
+  [pair: string]: Kline[]
 }
 
 const fetchPauseIntervalMs = 500;
@@ -34,3 +35,11 @@ export function getCandidatePairs (symbols: string[] = [], quotes: string[] = []
   return pairs.filter(pair => symbols.includes(pair.s) || quotes.includes(pair.q)).map(pair => `${pair.s}${pair.q}`)
 }
 
+
+export function getPairsFromFiles (pairs: string[]) {
+  const _pairs: PairsKlines = {}
+  for (const pair of pairs) {
+    _pairs[pair] = JSON.parse(fs.readFileSync(`${__dirname}/../data/${pair}.json`).toString())
+  }
+  return _pairs;
+}
