@@ -1,6 +1,6 @@
 import pairs from './binance-pairs.json'
 import { buildVolumeClassement } from './classement';
-import { getCandidatePairs, getPairsFromFiles, Pairs } from './pairs'
+import { getCandidatePairs, getPairsFromFiles, PairsKlines } from './pairs'
 
 
 function main () {
@@ -15,7 +15,7 @@ function main () {
 }
 
 
-export function getLowerKlinesLengthPair (pairs: Pairs) {
+export function getLowerKlinesLengthPair (pairs: PairsKlines) {
   const lengths: [string, number][] = Object.entries(pairs).map(([pair, klines]) => [pair, klines.length])
 
   lengths.sort((a, b) => {

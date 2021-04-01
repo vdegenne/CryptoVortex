@@ -1,3 +1,5 @@
+import { PairsKlines } from "./pairs"
+
 export type Kline = [
   number, // open time
   string, // open
@@ -23,4 +25,13 @@ export type Klines = Kline[]
  */
 export function getLastDate (klines: Klines) {
   return new Date(klines[klines.length - 1][0])
+}
+
+
+export function sortPairsKlinesFromClassement (pairs: PairsKlines, classement: string[]) {
+  const _pairs: PairsKlines = {}
+  for (const pair of classement) {
+    _pairs[pair] = pairs[pair]
+  }
+  return _pairs;
 }
