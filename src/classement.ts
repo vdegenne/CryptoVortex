@@ -1,8 +1,8 @@
-import { PairsKlines } from "./pairs";
+import { PairsKlines, PairsPkObjects } from "./pairs";
 
-export function buildVolumeClassement (pairs: PairsKlines, volumeDays: number) {
-  const volumes: [string, number][] = Object.entries(pairs).map(([pair, klines]) => {
-    const volumes = klines.slice(-volumeDays).map(kline => parseFloat(kline[5]))
+export function buildVolumeClassement (pairs: PairsPkObjects, volumeDays: number) {
+  const volumes: [string, number][] = Object.entries(pairs).map(([pair, pkObjects]) => {
+    const volumes = pkObjects.slice(-volumeDays).map(pkObject => pkObject.v)
     const volumesAverage = volumes.reduce((acc, curr) => acc + curr, 0) / volumes.length
     return [
       pair,

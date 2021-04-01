@@ -1,4 +1,4 @@
-import { Kline } from "./klines";
+import { Kline, pkObject } from "./klines";
 import pairs from './binance-pairs.json'
 import ms from 'ms'
 import fs from 'fs'
@@ -8,6 +8,10 @@ import { savePairInformation } from "./io";
 
 export type PairsKlines = {
   [pair: string]: Kline[]
+}
+
+export type PairsPkObjects = {
+  [pair: string]: pkObject[]
 }
 
 const fetchPauseIntervalMs = 500;

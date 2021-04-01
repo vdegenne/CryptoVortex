@@ -1,18 +1,4 @@
-import pairs from './binance-pairs.json'
-import { buildVolumeClassement } from './classement';
-import { getCandidatePairs, getPairsFromFiles, PairsKlines } from './pairs'
-
-
-function main () {
-  console.log(`number of available pairs (Binance): ${pairs.length}`)
-  const candidates = getCandidatePairs(['USDT'], ['USDT']);
-  console.log(`number of USDT pairs : ${candidates.length}`)
-  const Pairs = getPairsFromFiles(candidates)
-  // getLowerKlinesLengthPair(Pairs)
-  console.log(
-    buildVolumeClassement(Pairs, 5)
-  )
-}
+import { PairsKlines, PairsPkObjects } from './pairs'
 
 
 export function getLowerKlinesLengthPair (pairs: PairsKlines) {
@@ -25,5 +11,26 @@ export function getLowerKlinesLengthPair (pairs: PairsKlines) {
   return lengths;
 }
 
+export function getAscendingPairs (pairs: PairsPkObjects, days: number, minDays: number) {
+  return Object.fromEntries(
+    Object.entries(pairs).filter(([pair, pkObjects]) => {
+      if (pkObjects.length < minDays) { return false }
+      if (pkObjects.slice(-days).some(pkObject => pkObject.c < pkObject.o)) {
+        return false;
+      }
 
-main()
+      const closes = pkObjects.slice(-days).map(o => o.c)
+      let previous;
+      for (const close of closes) {
+        if (previous) {
+          if (close < previous) {
+            return false
+          }
+        }
+        previous = close
+      }
+      return true
+    })
+  )
+}
+

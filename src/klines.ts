@@ -1,4 +1,4 @@
-import { PairsKlines } from "./pairs"
+import { PairsKlines, PairsPkObjects } from "./pairs"
 
 export type Kline = [
   number, // open time
@@ -14,6 +14,16 @@ export type Kline = [
   string, // Taker buy quote asset volume
   string // Ignore.
 ]
+
+export type pkObject = {
+  ot: number,
+  ct: number,
+  o: number,
+  h: number,
+  l: number,
+  c: number,
+  v: number
+}
 
 export type Klines = Kline[]
 
@@ -34,4 +44,28 @@ export function sortPairsKlinesFromClassement (pairs: PairsKlines, classement: s
     _pairs[pair] = pairs[pair]
   }
   return _pairs;
+}
+
+export function convertKlineToPkObject (kline: Kline): pkObject {
+  return {
+    ot: kline[0],
+    ct: kline[6],
+    o: parseFloat(kline[1]),
+    h: parseFloat(kline[2]),
+    l: parseFloat(kline[3]),
+    c: parseFloat(kline[4]),
+    v: parseFloat(kline[5])
+  }
+}
+
+export function convertKlinesToPkObjects (klines: Klines): pkObject[] {
+  return klines.map(kline => convertKlineToPkObject(kline))
+}
+
+export function convertPairsKlinesToPairsPkObject (pairsKlines: PairsKlines): PairsPkObjects {
+  return Object.fromEntries(
+    Object.entries(pairsKlines).map(([pair, klines]) => {
+      return [pair, convertKlinesToPkObjects(klines)]
+    })
+  )
 }
