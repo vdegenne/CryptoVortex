@@ -1,0 +1,5 @@
+import { PairsKobjects } from './pairs'
+
+
+
+

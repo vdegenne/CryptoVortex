@@ -1,12 +1,26 @@
 
-## Plan d'éxecution
+# CryptoVortex (muhahaha)
 
-### Construction de la liste complète des paires disponibles sur Binance
+## Plan d'éxecution (order matters)
 
-Ce script doit être exécuté avant le script principal pour être sûr d'inclure les nouvelles paires dans le processus.
+Pour chaque fonction voir les options disponibles avec `--help`
+
+### 1. Construction de la liste complète des paires disponibles sur Binance
 
 ```
-ts-node src/build-pairs-list
+./src/vortex.ts binance-pairs
+```
+
+### 2. Appels et sauvegarde des informations de paires depuis Binance
+
+```
+./src/vortex.ts binance
+```
+
+### 3. Construction du fichier vortex
+
+```
+./src/vortex.ts
 ```
 
 ### Execution du script principal

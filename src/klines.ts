@@ -1,4 +1,4 @@
-import { PairsKlines, PairsPkObjects } from "./pairs"
+import { PairsKlines, PairsKobjects } from "./pairs"
 
 export type Kline = [
   number, // open time
@@ -15,7 +15,7 @@ export type Kline = [
   string // Ignore.
 ]
 
-export type pkObject = {
+export type Kobject = {
   ot: number,
   ct: number,
   o: number,
@@ -38,15 +38,7 @@ export function getLastDate (klines: Klines) {
 }
 
 
-export function sortPairsKlinesFromClassement (pairs: PairsKlines, classement: string[]) {
-  const _pairs: PairsKlines = {}
-  for (const pair of classement) {
-    _pairs[pair] = pairs[pair]
-  }
-  return _pairs;
-}
-
-export function convertKlineToPkObject (kline: Kline): pkObject {
+export function convertKlineToKobject (kline: Kline): Kobject {
   return {
     ot: kline[0],
     ct: kline[6],
@@ -58,14 +50,15 @@ export function convertKlineToPkObject (kline: Kline): pkObject {
   }
 }
 
-export function convertKlinesToPkObjects (klines: Klines): pkObject[] {
-  return klines.map(kline => convertKlineToPkObject(kline))
+export function convertKlinesToKobjects (klines: Klines): Kobject[] {
+  return klines.map(kline => convertKlineToKobject(kline))
 }
 
-export function convertPairsKlinesToPairsPkObject (pairsKlines: PairsKlines): PairsPkObjects {
-  return Object.fromEntries(
-    Object.entries(pairsKlines).map(([pair, klines]) => {
-      return [pair, convertKlinesToPkObjects(klines)]
-    })
-  )
+
+export function isKline (object: any) {
+  return object.v === undefined;
+}
+
+export function isKobject (object: any) {
+  return object.v !== undefined;
 }
