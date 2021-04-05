@@ -1,5 +1,9 @@
 
-# CryptoVortex (muhahaha)
+<p align="center">
+  <img src="./images/cryptovortex.png" width="240px" /><br>
+  <h1>CryptoVortex</h1>
+</p>
+# 
 
 ## Plan d'éxecution (order matters)
 
