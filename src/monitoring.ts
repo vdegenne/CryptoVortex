@@ -107,7 +107,7 @@ function ascendingScores (argv: any) {
     results = buildPairsFromClassement(results, volumeClassement.map(c => c[0])) as PairsKobjects
   }
   const classement = Object.keys(results).map(pair => `${blue(pair)}(${round(ascendingScoresClassement.find(p => p[0] === pair)![1])})`)
-  console.log(`${bold(`Ascending scores pairs (${argv.days} days${argv.v ? '; volume sorted' : ''})`)}: ${classement.join(', ')}`)
+  console.log(`${bold(`Ascending scored pairs (${argv.days} days${argv.v ? '; volume sorted' : ''})`)}: ${classement.join(', ')}`)
 }
 
 function ascendings (argv: any) {
