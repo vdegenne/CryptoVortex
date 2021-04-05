@@ -1,9 +1,9 @@
 
 <p align="center">
-  <img src="./images/cryptovortex.png" width="240px" /><br>
-  <h1>CryptoVortex</h1>
+  <img src="./images/cryptovortex.png" width=""300px" /><br>
+  <h1 align="center">CryptoVortex</h1>
 </p>
-# 
+
 
 ## Plan d'éxecution (order matters)
 
@@ -27,12 +27,14 @@ Pour chaque fonction voir les options disponibles avec `--help`
 ./src/vortex.ts dump
 ```
 
-**Execution du script principal**
+**Execution du script principal (to update !)**
 
 ```
 ts-node src/CryptoVortex
 ```
-*(les variables d'entrées peuvent être ajustées dans le fichier `src/Ailurophilium.ts`)*
+*(les variables d'entrées peuvent être ajustées dans le fichier `src/CryptoVortex.ts`)*
+
+### détails
 
 Le script a pour effet d'appeler toutes les exécutions séquentiellement :
 
