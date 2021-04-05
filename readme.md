@@ -5,28 +5,28 @@
 
 Pour chaque fonction voir les options disponibles avec `--help`
 
-### 1. Construction de la liste complète des paires disponibles sur Binance
+**1. Construction de la liste complète des paires disponibles sur Binance**
 
 ```
 ./src/vortex.ts binance-pairs
 ```
 
-### 2. Appels et sauvegarde des informations de paires depuis Binance
+**2. Appels et sauvegarde des informations de paires depuis Binance**
 
 ```
 ./src/vortex.ts binance
 ```
 
-### 3. Construction du fichier vortex
+**3. Construction du fichier dump**
 
 ```
-./src/vortex.ts
+./src/vortex.ts dump
 ```
 
-### Execution du script principal
+**Execution du script principal**
 
 ```
-ts-node src/Ailurophilium
+ts-node src/CryptoVortex
 ```
 *(les variables d'entrées peuvent être ajustées dans le fichier `src/Ailurophilium.ts`)*
 
