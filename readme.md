@@ -1,6 +1,8 @@
 
 <p align="center">
-  <img src="./images/cryptovortex.png" width=""300px" /><br>
+  <img src="./images/cryptovortex.png" width="300px" />
+  <img src="./images/tornado.png" width="200px">
+  <br>
   <h1 align="center">CryptoVortex</h1>
 </p>
 
