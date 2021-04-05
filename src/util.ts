@@ -11,7 +11,7 @@ export function getMaximalAscent (open: number, high: number) {
 }
 
 export function getMaximalDescent (open: number, low: number) {
-  return 100 * (open - low) / open;
+  return 100 * (low - open) / open;
 }
 
 export function formatVolume(volume: number) {

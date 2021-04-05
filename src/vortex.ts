@@ -28,6 +28,16 @@ export function vortexDump (pairs: PairsKlines) {
   ) as Dump
 }
 
+export function dumpMmax (pairs: PairsKlines): number[] {
+  return Object.values(pairs).map(klines => klines.map(kline => {
+    return getMaximalAscent(parseFloat(kline[1]), parseFloat(kline[2]))
+  })).reduce((acc, curr) => acc.concat(curr), [])
+}
+export function dumpDmax (pairs: PairsKlines): number[] {
+  return Object.values(pairs).map(klines => klines.map(kline => {
+    return getMaximalDescent(parseFloat(kline[1]), parseFloat(kline[3]))
+  })).reduce((acc, curr) => acc.concat(curr), [])
+}
 
 export function saveVortexDumpToFile (dump: Dump) {
   fs.writeFileSync(`${__dirname}/../vortex-dump.json`, JSON.stringify(
@@ -122,6 +132,8 @@ async function dump (argv) {
   const sortedPairs = buildPairsFromClassement(pairs, classement.map(p => p[0])) as PairsKlines
   // get vortex dump and save to file
   saveVortexDumpToFile(vortexDump(sortedPairs))
+  fs.writeFileSync(`${__dirname}/../m-max.json`, JSON.stringify(dumpMmax(sortedPairs)))
+  fs.writeFileSync(`${__dirname}/../d-max.json`, JSON.stringify(dumpDmax(sortedPairs)))
   console.log('saved to file successfully')
 }
 
