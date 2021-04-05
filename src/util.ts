@@ -13,3 +13,15 @@ export function getMaximalAscent (open: number, high: number) {
 export function getMaximalDescent (open: number, low: number) {
   return 100 * (open - low) / open;
 }
+
+export function formatVolume(volume: number) {
+  let divided = Math.round(volume / 1000000)
+  if (divided >= 1) {
+    return `${divided}M`;
+  }
+  divided = Math.round(volume / 1000);
+  if (divided) {
+    return `${divided}K`;
+  }
+  return Math.round(volume);
+}

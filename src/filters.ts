@@ -1,6 +1,6 @@
 import { PairsKobjects } from "./pairs";
 
-export function filterAscendingPairs (pairs: PairsKobjects, days: number, minDays: number): PairsKobjects {
+export function filterAscendingPairs (pairs: PairsKobjects, days: number, minDays: number = 0): PairsKobjects {
   return Object.fromEntries(
     Object.entries(pairs).filter(([pair, kobjects]) => {
       if (kobjects.length < minDays) { return false }

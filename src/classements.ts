@@ -47,8 +47,30 @@ export function getNewestClassement (pairs: PairsKlines|PairsKobjects) {
   return lengths;
 }
 
-export function getAscendingScoreClassement (pairs: PairsKlines|PairsKobjects, days: number) {
+export function getPairsKobjectsAscendingScoresClassement (pairs: PairsKobjects, days: number, minDays: number = 0) {
+  const scores: [string, number][] = Object.entries(pairs).map(([pair, kobjects]) => {
+    const closes = kobjects.slice(-days).filter(kobject => {
+      if (kobjects.length < minDays) { return false }
+      return true;
+    }).map(kobject => kobject.c)
+    let ascendCount = 0;
+    let previous;
+    for (const close of closes) {
+      if (previous) {
+        if (close >= previous) {
+          ascendCount++;
+        }
+      }
+      previous = close
+    }
+    return [pair, ascendCount/closes.length]
+  })
 
+  scores.sort((a, b) => {
+    return b[1] - a[1]
+  })
+
+  return scores;
 }
 
 export function buildPairsFromClassement (pairs: PairsKlines|PairsKobjects, classement: string[]) {
