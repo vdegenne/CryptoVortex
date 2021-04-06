@@ -4,8 +4,9 @@ import fs from 'fs'
 import yargs from 'yargs';
 import { buildPairsFromClassement, getPairsKlinesVolumeClassement } from './classements';
 import { assets, daysWindow, dumpSize, includesLeverage, volumeDays } from './defaults';
-import { getCandidatePairs, getPairsKlinesFromBinance, getPairsKlinesFromFiles, PairsKlines, PairsKobjects } from "./pairs";
+import { convertPairsKlinesToPairsKobjects, getCandidatePairs, getPairsKlinesFromBinance, getPairsKlinesFromFiles, PairsKlines, PairsKobjects } from "./pairs";
 import { getMaximalAscent, getMaximalDescent } from "./util";
+import fetch from 'node-fetch'
 
 export type Dump = {
   [pair: string]: [string, number, number][]
@@ -134,6 +135,18 @@ async function dump (argv) {
   saveVortexDumpToFile(vortexDump(sortedPairs))
   fs.writeFileSync(`${__dirname}/../m-max.json`, JSON.stringify(dumpMmax(sortedPairs)))
   fs.writeFileSync(`${__dirname}/../d-max.json`, JSON.stringify(dumpDmax(sortedPairs)))
+  fs.writeFileSync(`${__dirname}/../test.json`, JSON.stringify(
+    Object.fromEntries(Object.entries(convertPairsKlinesToPairsKobjects(sortedPairs)).map(([pair, kobjects]) => {
+      return [
+        pair,
+        kobjects.map(kobject => ({
+          j: new Date(kobject.ot).toLocaleDateString('fr-FR'),
+          m: getMaximalAscent(kobject.o, kobject.h),
+          d: getMaximalDescent(kobject.o, kobject.l)
+        }))
+      ]
+    }))
+  ))
   console.log('saved to file successfully')
 }
 
