@@ -4,9 +4,9 @@ import fs from 'fs'
 import yargs from 'yargs';
 import { buildPairsFromClassement, getPairsKlinesVolumeClassement } from './classements';
 import { assets, daysWindow, dumpSize, includesLeverage, volumeDays } from './defaults';
-import { convertPairsKlinesToPairsKobjects, getCandidatePairs, getPairsKlinesFromBinance, getPairsKlinesFromFiles, PairsKlines, PairsKobjects } from "./pairs";
-import { getMaximalAscent, getMaximalDescent } from "./util";
+import { convertPairsKlinesToPairsKobjects, getCandidatePairs, getPairsKlinesFromBinance, getPairsKlinesFromFiles, PairsKlines } from "./pairs";
 import fetch from 'node-fetch'
+import { percent } from './util';
 
 export type Dump = {
   [pair: string]: [string, number, number][]
@@ -20,8 +20,8 @@ export function vortexDump (pairs: PairsKlines) {
         klines.map(kline => {
           return [
             new Date(kline[0]).toLocaleDateString('fr-FR'),
-            getMaximalAscent(parseFloat(kline[1]), parseFloat(kline[2])),
-            getMaximalDescent(parseFloat(kline[1]), parseFloat(kline[3]))
+            percent(parseFloat(kline[1]), parseFloat(kline[2])),
+            percent(parseFloat(kline[1]), parseFloat(kline[3]))
           ]
         })
       ]
@@ -31,17 +31,18 @@ export function vortexDump (pairs: PairsKlines) {
 
 export function dumpMmax (pairs: PairsKlines): number[] {
   return Object.values(pairs).map(klines => klines.map(kline => {
-    return getMaximalAscent(parseFloat(kline[1]), parseFloat(kline[2]))
+    return percent(parseFloat(kline[1]), parseFloat(kline[2]))
   })).reduce((acc, curr) => acc.concat(curr), [])
 }
 export function dumpDmax (pairs: PairsKlines): number[] {
   return Object.values(pairs).map(klines => klines.map(kline => {
-    return getMaximalDescent(parseFloat(kline[1]), parseFloat(kline[3]))
+    return percent(parseFloat(kline[1]), parseFloat(kline[3]))
   })).reduce((acc, curr) => acc.concat(curr), [])
 }
-export function dumpCloses (pairs: PairsKlines): number[] {
-  return Object.values(pairs).map(klines => klines.map(kline => parseFloat(kline[4])))
-  .reduce((acc, curr) => acc.concat(curr), [])
+export function dumpEvolutions (pairs: PairsKlines): number[] {
+  return Object.values(pairs).map(klines => klines.map(kline => {
+    return percent(parseFloat(kline[1]), parseFloat(kline[4]))
+  })).reduce((acc, curr) => acc.concat(curr), [])
 }
 
 export function saveVortexDumpToFile (dump: Dump) {
@@ -124,9 +125,11 @@ function main () {
 }
 
 async function binance (argv) {
-  const pairs = getCandidatePairs(argv.assets, argv.assets)
+  const candidates = getCandidatePairs(argv.assets, argv.assets)
   console.log(`These assets will be fetched: ${argv.assets.join(', ')}`)
-  await getPairsKlinesFromBinance(pairs, argv.days, argv.pause, true)
+  const pairsKlines = await getPairsKlinesFromBinance(candidates, argv.days, argv.pause, true)
+  // save the pairsKlines into a dump for general utilisation
+  fs.writeFileSync(`${__dirname}/../dumps/pairs-klines.json`, JSON.stringify(pairsKlines))
   console.log(`Assets' information fetched`)
 }
 
@@ -139,15 +142,15 @@ async function dump (argv) {
   saveVortexDumpToFile(vortexDump(sortedPairs))
   fs.writeFileSync(`${__dirname}/../dumps/m-max.json`, JSON.stringify(dumpMmax(sortedPairs)))
   fs.writeFileSync(`${__dirname}/../dumps/d-max.json`, JSON.stringify(dumpDmax(sortedPairs)))
-  fs.writeFileSync(`${__dirname}/../dumps/closes.json`, JSON.stringify(dumpCloses(sortedPairs)))
+  fs.writeFileSync(`${__dirname}/../dumps/evolutions.json`, JSON.stringify(dumpEvolutions(sortedPairs)))
   fs.writeFileSync(`${__dirname}/../dumps/test.json`, JSON.stringify(
     Object.fromEntries(Object.entries(convertPairsKlinesToPairsKobjects(sortedPairs)).map(([pair, kobjects]) => {
       return [
         pair,
         kobjects.map(kobject => ({
           j: new Date(kobject.ot).toLocaleDateString('fr-FR'),
-          m: getMaximalAscent(kobject.o, kobject.h),
-          d: getMaximalDescent(kobject.o, kobject.l)
+          m: percent(kobject.o, kobject.h),
+          d: percent(kobject.o, kobject.l)
         }))
       ]
     }))

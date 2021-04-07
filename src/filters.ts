@@ -22,3 +22,28 @@ export function filterAscendingPairs (pairs: PairsKobjects, days: number, minDay
     })
   )
 }
+
+export function filterProgressiveAscendingPairs (pairs: PairsKobjects, days: number, minDays: number = 0): PairsKobjects {
+  return Object.fromEntries(
+    Object.entries(pairs).filter(([pair, kobjects]) => {
+      if (kobjects.length < minDays) { return false }
+
+      const closes = kobjects.slice(-days).map(o => o.c)
+      let previous;
+      let height;
+      for (const close of closes) {
+        if (previous) {
+          if (close < previous) {
+            return false
+          }
+          if (height !== undefined && height < close - previous) {
+            return false;
+          }
+          height = close - previous;
+        }
+        previous = close
+      }
+      return true
+    })
+  )
+}
