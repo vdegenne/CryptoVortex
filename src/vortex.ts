@@ -4,9 +4,12 @@ import fs from 'fs'
 import yargs from 'yargs';
 import { buildPairsFromClassement, getPairsKlinesVolumeClassement } from './classements';
 import { assets, daysWindow, dumpSize, includesLeverage, volumeDays } from './defaults';
-import { convertPairsKlinesToPairsKobjects, getCandidatePairs, getPairsKlinesFromBinance, getPairsKlinesFromFiles, PairsKlines } from "./pairs";
+import { convertPairsKlinesToPairsKobjects, getCandidatePairs, PairsKlines } from "./pairs";
 import fetch from 'node-fetch'
-import { percent } from './util';
+import { percent, round, wait } from './util';
+import { fetchPairKlines } from './binance';
+import { savePairInformation } from './io';
+import ms from 'ms'
 
 export type Dump = {
   [pair: string]: [string, number, number][]
@@ -129,7 +132,7 @@ async function binance (argv) {
   console.log(`These assets will be fetched: ${argv.assets.join(', ')}`)
   const pairsKlines = await getPairsKlinesFromBinance(candidates, argv.days, argv.pause, true)
   // save the pairsKlines into a dump for general utilisation
-  fs.writeFileSync(`${__dirname}/../dumps/pairs-klines.json`, JSON.stringify(pairsKlines))
+  dumpPairsKlines()
   console.log(`Assets' information fetched`)
 }
 
@@ -159,3 +162,53 @@ async function dump (argv) {
 }
 
 main()
+
+
+export function getPairsKlinesFromFiles (pairs: string[]) {
+  const _pairs: PairsKlines = {}
+  for (const pair of pairs) {
+    try {
+      _pairs[pair] = JSON.parse(fs.readFileSync(`${__dirname}/../data/${pair}.json`).toString())
+    }
+    catch (e) {}
+  }
+  return _pairs;
+}
+
+/**
+ * This function hits two birds with one rock.
+ * It fetches the pairs' data from Binance and returns an updated PairsKlines structure.
+ * As the pairs' data is fetched from Binance, each pair's information is saved in separate
+ * file on the filesystem for reusable purpose.
+ */
+export async function getPairsKlinesFromBinance (pairs: string[], days: number = 180, pauseMs: number = 150, debug = false) {
+  // @todo in this function we should check if the pair file exists
+  // if it exists we fetch only the missing days.
+  const pairsKlines: PairsKlines = {}
+  let i = 1
+  for (const pair of pairs) {
+    // @todo check if the pair file exists (or else we fetch directly)
+    if (debug) { console.log(`fetching ${pair}...`) }
+    const klines = await fetchPairKlines(pair, Date.now() - ms(`${days}d`))
+    // we pop the last kline (which is the current day)
+    // klines.pop()
+    savePairInformation(pair, klines)
+    pairsKlines[pair] = klines;
+    if (debug) { console.log(`progression: ${(round((i * 100) / pairs.length))}%`) }
+    await wait(pauseMs)
+    i++;
+  }
+  return pairsKlines;
+}
+
+
+export function dumpPairsKlines () {
+  const files = fs.readdirSync(`${__dirname}/../data/`)
+  const pairs: PairsKlines = {}
+  for (const file of files) {
+    const name = file.split('.')[0]
+    pairs[name] = JSON.parse(fs.readFileSync(`${__dirname}/../data/${file}`).toString())
+  }
+  // save the mega file in the dumps
+  fs.writeFileSync(`${__dirname}/../dumps/pairs-klines.json`, JSON.stringify(pairs))
+}
