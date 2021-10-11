@@ -1,3 +1,4 @@
+import { filterStrictEvolutions } from "./filters";
 import { Map, mapEvolutions, mapEvolutionsScores, sortMap } from "./maps";
 import { getCandidatePairs, PairsKobjects } from "./pairs";
 
@@ -25,4 +26,15 @@ export function pairsEvolutionScores (pairs: PairsKobjects, argv: PairsEvolution
     scores = scores.map(([pair, score]) => [pair, 1 - score])
   }
   return sortMap(scores).slice(0, argv.size)
+}
+
+export type StrictEvolutionsArgv = {
+  days: number,
+  minDays: number,
+  ascending: boolean,
+  size: number
+}
+export function strictEvolutions (pairs: PairsKobjects, argv: StrictEvolutionsArgv): Map {
+  let evolutions = filterStrictEvolutions(pairs, argv.ascending, argv.days, argv.minDays)
+  return sortMap(mapEvolutions(evolutions, argv.days), false).slice(0, argv.size)
 }

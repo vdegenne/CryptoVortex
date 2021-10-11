@@ -1,5 +1,3 @@
-import { PairsKlines, PairsKobjects } from "./pairs"
-
 export type Kline = [
   number, // open time
   string, // open

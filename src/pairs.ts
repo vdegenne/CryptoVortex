@@ -1,5 +1,7 @@
 import { convertKlinesToKobjects, Kline, Kobject } from "./klines";
-import pairsNames from '../dumps/binance-pairs.json'
+// import pairsNames from '../dumps/binance-pairs.json'
+
+export type PairName = { s: string, q: string }
 
 export type PairsKlines = {
   [pair: string]: Kline[]
@@ -10,7 +12,7 @@ export class PairsKobjects {
 }
 
 
-export function getCandidatePairs (symbols: string[] = [], quotes: string[] = [], leverage = false) {
+export function getCandidatePairs (pairsNames: PairName[], symbols: string[] = [], quotes: string[] = [], leverage = false) {
   return pairsNames.filter(pair => {
     if (!leverage && (pair.s.endsWith('UP') || pair.s.endsWith('DOWN'))) {
       return false
@@ -29,7 +31,7 @@ export function convertPairsKlinesToPairsKobjects (pairsKlines: PairsKlines): Pa
   )
 }
 
-export function getPairsNameObjectFromName (name: string) {
+export function getPairsNameObjectFromName (pairsNames: PairName[], name: string) {
   return pairsNames.find(object => `${object.s}${object.q}` === name);
 }
 

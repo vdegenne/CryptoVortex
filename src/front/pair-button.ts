@@ -21,7 +21,7 @@ export class PairButton extends LitElement {
   constructor() {
     super()
     this.addEventListener('click', e => {
-      const { s, q } = getPairsNameObjectFromName(this.name)!
+      const { s, q } = getPairsNameObjectFromName(window.app.binancePairs, this.name)!
       visitBinance(s, q)
     })
   }

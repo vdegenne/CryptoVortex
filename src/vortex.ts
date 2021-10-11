@@ -10,6 +10,7 @@ import { percent, round, wait } from './util';
 import { fetchPairKlines } from './binance';
 import { savePairInformation } from './io';
 import ms from 'ms'
+import pairsNames from './binance-pairs.json'
 
 export type Dump = {
   [pair: string]: [string, number, number][]
@@ -128,7 +129,7 @@ function main () {
 }
 
 async function binance (argv) {
-  const candidates = getCandidatePairs(argv.assets, argv.assets)
+  const candidates = getCandidatePairs(pairsNames, argv.assets, argv.assets)
   console.log(`These assets will be fetched: ${argv.assets.join(', ')}`)
   const pairsKlines = await getPairsKlinesFromBinance(candidates, argv.days, argv.pause, true)
   // save the pairsKlines into a dump for general utilisation
@@ -189,7 +190,7 @@ export async function getPairsKlinesFromBinance (pairs: string[], days: number =
   for (const pair of pairs) {
     // @todo check if the pair file exists (or else we fetch directly)
     if (debug) { console.log(`fetching ${pair}...`) }
-    const klines = await fetchPairKlines(pair, Date.now() - ms(`${days}d`))
+    const klines = await fetchPairKlines(fetch, pair, Date.now() - ms(`${days}d`))
     // we pop the last kline (which is the current day)
     // klines.pop()
     savePairInformation(pair, klines)
