@@ -14,6 +14,7 @@ import './binance-fetcher'
 import { BinanceFetcher } from './binance-fetcher'
 import { TextField } from '@material/mwc-textfield'
 import './strict-evolutions'
+import './age-view'
 
 declare global {
   interface Window {
@@ -98,6 +99,7 @@ export class MonitoringApp extends LitElement {
       <mwc-tab label="montées (scores)"></mwc-tab>
       <mwc-tab label="strict ascendings"></mwc-tab>
       <mwc-tab label="strict descendings"></mwc-tab>
+      <mwc-tab label="age"></mwc-tab>
     </mwc-tab-bar>
 
     <percents-view class="view" ?show="${this.tabIndex === 0}" croissant></percents-view>
@@ -106,6 +108,7 @@ export class MonitoringApp extends LitElement {
     <evolutions-view class="view" ?show="${this.tabIndex === 3}"></evolutions-view>
     <strict-evolutions class="view" ?show="${this.tabIndex === 4}" ascending></strict-evolutions>
     <strict-evolutions class="view" ?show="${this.tabIndex === 5}"></strict-evolutions>
+    <age-view class="view" ?show="${this.tabIndex === 6}"></age-view>
 
     ${this.binanceFetcher}
     `

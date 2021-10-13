@@ -9471,6 +9471,17 @@ function strictEvolutions(pairs, argv) {
     let evolutions = filterStrictEvolutions(pairs, argv.ascending, argv.days, argv.minDays);
     return sortMap(mapEvolutions(evolutions, argv.days), false).slice(0, argv.size);
 }
+function ageFunction(pairs, argv) {
+    return sortMap(Object.entries(pairs).filter(o => {
+        if (argv.equal) {
+            return o[1].length <= argv.age;
+        }
+        else {
+            return o[1].length < argv.age;
+        }
+    })
+        .map(([pair, o]) => [pair, o.length]));
+}
 
 /**
  * Returns the last date (Date object).
@@ -12729,6 +12740,49 @@ StrictEvolutions = __decorate([
     customElement('strict-evolutions')
 ], StrictEvolutions);
 
+let AgeView = class AgeView extends LitElement {
+    constructor() {
+        super(...arguments);
+        this.age = 5;
+        this.results = [];
+    }
+    render() {
+        return html `
+    <p>age (less or equal than ${this.age})</p>
+    <mwc-slider max="100" min="1" step="1" pin markers
+    @change="${e => this.age = e.target.value}"
+    value="${this.age}"></mwc-slider>
+
+    <mwc-button unelevated
+      @click="${() => this.onCalculateClick()}">calculate</mwc-button>
+
+    <div id="results">
+    ${this.results.map(r => {
+            return html `<pair-button name="${r[0]}" value="${round(r[1])}"></pair-button>`;
+        })}
+    </div>
+    `;
+    }
+    onCalculateClick() {
+        this.results = ageFunction(window.app.data, {
+            age: this.age,
+            equal: true
+        });
+    }
+};
+AgeView.styles = [
+    globalStyles
+];
+__decorate([
+    property({ type: Number })
+], AgeView.prototype, "age", void 0);
+__decorate([
+    property({ type: Array })
+], AgeView.prototype, "results", void 0);
+AgeView = __decorate([
+    customElement('age-view')
+], AgeView);
+
 let MonitoringApp = class MonitoringApp extends LitElement {
     constructor() {
         super();
@@ -12771,6 +12825,7 @@ let MonitoringApp = class MonitoringApp extends LitElement {
       <mwc-tab label="montées (scores)"></mwc-tab>
       <mwc-tab label="strict ascendings"></mwc-tab>
       <mwc-tab label="strict descendings"></mwc-tab>
+      <mwc-tab label="age"></mwc-tab>
     </mwc-tab-bar>
 
     <percents-view class="view" ?show="${this.tabIndex === 0}" croissant></percents-view>
@@ -12779,6 +12834,7 @@ let MonitoringApp = class MonitoringApp extends LitElement {
     <evolutions-view class="view" ?show="${this.tabIndex === 3}"></evolutions-view>
     <strict-evolutions class="view" ?show="${this.tabIndex === 4}" ascending></strict-evolutions>
     <strict-evolutions class="view" ?show="${this.tabIndex === 5}"></strict-evolutions>
+    <age-view class="view" ?show="${this.tabIndex === 6}"></age-view>
 
     ${this.binanceFetcher}
     `;

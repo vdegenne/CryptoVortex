@@ -38,3 +38,19 @@ export function strictEvolutions (pairs: PairsKobjects, argv: StrictEvolutionsAr
   let evolutions = filterStrictEvolutions(pairs, argv.ascending, argv.days, argv.minDays)
   return sortMap(mapEvolutions(evolutions, argv.days), false).slice(0, argv.size)
 }
+
+export type AgeArgv = {
+  age: number,
+  equal: boolean
+}
+export function ageFunction (pairs: PairsKobjects, argv: AgeArgv): Map {
+  return sortMap(Object.entries(pairs).filter(o => {
+    if (argv.equal) {
+      return o[1].length <= argv.age
+    }
+    else {
+      return o[1].length < argv.age
+    }
+  })
+  .map(([pair, o]) => [pair, o.length]))
+}
