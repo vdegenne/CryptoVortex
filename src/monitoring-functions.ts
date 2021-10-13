@@ -52,5 +52,5 @@ export function ageFunction (pairs: PairsKobjects, argv: AgeArgv): Map {
       return o[1].length < argv.age
     }
   })
-  .map(([pair, o]) => [pair, o.length]))
+  .map(([pair, o]) => [pair, o.length]), true)
 }

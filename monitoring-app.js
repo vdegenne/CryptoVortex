@@ -9480,7 +9480,7 @@ function ageFunction(pairs, argv) {
             return o[1].length < argv.age;
         }
     })
-        .map(([pair, o]) => [pair, o.length]));
+        .map(([pair, o]) => [pair, o.length]), true);
 }
 
 /**
