@@ -15,7 +15,7 @@ import '@material/mwc-icon-button'
 @customElement('binance-fetcher')
 export class BinanceFetcher extends LitElement {
   // @property({type:Array})
-  private assets = ['USDT', 'EUR'];
+  private assets = ['USDT'];
 
   @property({type:Number})
   private days = 180;

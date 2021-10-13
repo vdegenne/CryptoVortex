@@ -24,7 +24,7 @@ declare global {
 
 @customElement('monitoring-app')
 export class MonitoringApp extends LitElement {
-  private assets = ['USDT', 'EUR']
+  private assets = ['USDT']
   private removeLastDays = false;
 
   @property({type:Array})

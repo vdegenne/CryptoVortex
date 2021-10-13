@@ -12577,7 +12577,7 @@ let BinanceFetcher = class BinanceFetcher extends LitElement {
     constructor() {
         super(...arguments);
         // @property({type:Array})
-        this.assets = ['USDT', 'EUR'];
+        this.assets = ['USDT'];
         this.days = 180;
         this.fetching = false;
         this.progression = 0;
@@ -12786,7 +12786,7 @@ AgeView = __decorate([
 let MonitoringApp = class MonitoringApp extends LitElement {
     constructor() {
         super();
-        this.assets = ['USDT', 'EUR'];
+        this.assets = ['USDT'];
         this.removeLastDays = false;
         this.binancePairs = [];
         this.binanceFetcher = new BinanceFetcher();
