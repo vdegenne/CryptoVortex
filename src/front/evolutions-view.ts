@@ -4,7 +4,7 @@ import '@material/mwc-button'
 import '@material/mwc-icon'
 import '@material/mwc-slider'
 import globalStyles from "./globalStyles";
-import { pairsEvolutions, pairsEvolutionScores } from "../monitoring-functions";
+import { pairsEvolutionScores } from "../monitoring-functions";
 import './pair-button'
 import { Map } from "../maps";
 import { round } from "../util";

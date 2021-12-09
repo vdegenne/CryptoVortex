@@ -1,6 +1,5 @@
 import { css, customElement, html, LitElement, property } from "lit-element";
 import { getPairsNameObjectFromName } from "../pairs";
-import { round } from "../util";
 import globalStyles from "./globalStyles";
 import { visitBinance } from "./util";
 

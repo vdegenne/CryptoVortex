@@ -2,12 +2,13 @@
 
 import _pairs from './binance-pairs.json'
 import { getNewestClassement, buildPairsFromClassement, getPairsKobjectsVolumeClassement, getPairsKlinesVolumeClassement, getPairsKobjectsAscendingScoresClassement } from './classements';
-import { convertPairsKlinesToPairsKobjects, getCandidatePairs, getPairsKlinesFromFiles, PairsKlines, PairsKobjects } from './pairs';
+import { convertPairsKlinesToPairsKobjects, getCandidatePairs, PairsKlines, PairsKobjects } from './pairs';
 import yargs from 'yargs'
 import { filterAscendingPairs } from './filters';
 import { assets, includesLeverage } from './defaults';
 import { formatVolume, round } from './util';
 import { bold, blue } from 'chalk';
+import { getPairsKlinesFromFiles } from './vortex';
 
 
 

@@ -10,7 +10,7 @@ import { percent, round, wait } from './util';
 import { fetchPairKlines } from './binance';
 import { savePairInformation } from './io';
 import ms from 'ms'
-import pairsNames from './binance-pairs.json'
+import pairsNames from '../dumps/binance-pairs.json'
 
 export type Dump = {
   [pair: string]: [string, number, number][]
@@ -71,70 +71,48 @@ async function buildBinancePairs () {
       q: s.quoteAsset
     }))
   // save the file
-  fs.writeFileSync(`${__dirname}/binance-pairs.json`, JSON.stringify(pairs))
+  fs.writeFileSync(`${__dirname}/../dumps/binance-pairs.json`, JSON.stringify(pairs))
 
   console.log(`saved ${pairs.length} pairs`)
 }
 
-function main () {
-  const argv = yargs(process.argv.slice(2))
-  .option('assets', {
-    describe: 'assets to fetch',
-    alias: 'a',
-    type: 'array',
-    default: assets
-  })
-  .command('binance-pairs', 'fetch and save Binance available pairs\' information', {}, async () => {
-    await buildBinancePairs()
-  })
-  .command('binance [days] [pause] [options]', 'fetch pairs\' information from Binance', (yargs) => {
-    yargs
-    .positional('days', {
-      describe: 'window of days to fetch for each pair',
-      alias: 'd',
-      type: 'number',
-      default: daysWindow
-    })
-    .positional('pause', {
-      describe: 'time to wait between each requests (milliseconds)',
-      alias: 'p',
-      type: 'number',
-      default: 150
-    })
-  }, binance)
-  .command('dump [size] [volumeDays] [leverage]', 'convert the data slurped by the vortex into a usable json\nvolume sorted and trimmed to size', (yargs) => {
-    yargs
-    .positional('size', {
-      describe: 'size of the final top list',
-      alias: 's',
-      type: 'number',
-      default: dumpSize
-    })
-    .positional('volumeDays', {
-      describe: 'window of days to calculate for the volume classement',
-      alias: 'v',
-      type: 'number',
-      default: volumeDays
-    })
-    .positional('leverage', {
-     describe: 'include the leverage pairs',
-     alias: 'l',
-     type: 'boolean',
-     default: includesLeverage
-    })
-  }, dump)
-  .help()
-  .version()
-  .argv;
-}
 
 async function binance (argv) {
   const candidates = getCandidatePairs(pairsNames, argv.assets, argv.assets)
+  // candidates = ['ADAUSDT', 'ETHUSDT', ... ]
   console.log(`These assets will be fetched: ${argv.assets.join(', ')}`)
   const pairsKlines = await getPairsKlinesFromBinance(candidates, argv.days, argv.pause, true)
   // save the pairsKlines into a dump for general utilisation
   dumpPairsKlines()
   console.log(`Assets' information fetched`)
+}
+
+/**
+ * This function hits two birds with one rock.
+ * It fetches the pairs' data from Binance and returns an updated PairsKlines structure.
+ * As the pairs' data is fetched from Binance, each pair's information is saved in separate
+ * file on the filesystem for reusable purpose.
+ */
+export async function getPairsKlinesFromBinance (pairs: string[], days: number = 180, pauseMs: number = 100, debug = false) {
+  // @todo in this function we should check if the pair file exists
+  // if it exists we fetch only the missing days.
+  const pairsKlines: PairsKlines = {}
+
+  let i = 1, saveComplete
+  // @TODO: fetch 5 by 5 or so (with Promise)
+  for (const pair of pairs) {
+    if (debug) { console.log(`fetching ${pair}...`) }
+    // @TODO: unit (d, h, m) and save the parameters in a dump file for front feedback
+    const klines = await fetchPairKlines(fetch, pair, Date.now() - ms(`${days}d`))
+    // klines.pop() // we pop the last kline (which is the current day)
+    saveComplete = savePairInformation(pair, klines)
+    pairsKlines[pair] = klines;
+    if (debug) { console.log(`progression: ${(round((i * 100) / pairs.length))}%`) }
+    await wait(pauseMs)
+    i++;
+  }
+  await saveComplete
+  return pairsKlines;
 }
 
 async function dump (argv) {
@@ -176,31 +154,6 @@ export function getPairsKlinesFromFiles (pairs: string[]) {
   return _pairs;
 }
 
-/**
- * This function hits two birds with one rock.
- * It fetches the pairs' data from Binance and returns an updated PairsKlines structure.
- * As the pairs' data is fetched from Binance, each pair's information is saved in separate
- * file on the filesystem for reusable purpose.
- */
-export async function getPairsKlinesFromBinance (pairs: string[], days: number = 180, pauseMs: number = 150, debug = false) {
-  // @todo in this function we should check if the pair file exists
-  // if it exists we fetch only the missing days.
-  const pairsKlines: PairsKlines = {}
-  let i = 1
-  for (const pair of pairs) {
-    // @todo check if the pair file exists (or else we fetch directly)
-    if (debug) { console.log(`fetching ${pair}...`) }
-    const klines = await fetchPairKlines(fetch, pair, Date.now() - ms(`${days}d`))
-    // we pop the last kline (which is the current day)
-    // klines.pop()
-    savePairInformation(pair, klines)
-    pairsKlines[pair] = klines;
-    if (debug) { console.log(`progression: ${(round((i * 100) / pairs.length))}%`) }
-    await wait(pauseMs)
-    i++;
-  }
-  return pairsKlines;
-}
 
 
 export function dumpPairsKlines () {
@@ -212,4 +165,57 @@ export function dumpPairsKlines () {
   }
   // save the mega file in the dumps
   fs.writeFileSync(`${__dirname}/../dumps/pairs-klines.json`, JSON.stringify(pairs))
+}
+
+
+function main () {
+  const argv = yargs(process.argv.slice(2))
+  .option('assets', {
+    describe: 'assets to fetch',
+    alias: 'a',
+    type: 'array',
+    default: assets
+  })
+  .command('binance-pairs', 'fetch and save Binance available pairs', {}, async () => {
+    await buildBinancePairs()
+  })
+  .command('binance [days] [pause] [options]', 'fetch pairs\' information from Binance', (yargs) => {
+    yargs
+    .positional('days', {
+      describe: 'window of days to fetch for each pair',
+      alias: 'd',
+      type: 'number',
+      default: daysWindow
+    })
+    .positional('pause', {
+      describe: 'time to wait between each requests (milliseconds)',
+      alias: 'p',
+      type: 'number',
+      default: 150
+    })
+  }, binance)
+  .command('dump [size] [volumeDays] [leverage]', 'convert the data slurped by the vortex into a usable json\nvolume sorted and trimmed to size', (yargs) => {
+    yargs
+    .positional('size', {
+      describe: 'size of the final top list',
+      alias: 's',
+      type: 'number',
+      default: dumpSize
+    })
+    .positional('volumeDays', {
+      describe: 'window of days to calculate for the volume classement',
+      alias: 'v',
+      type: 'number',
+      default: volumeDays
+    })
+    .positional('leverage', {
+     describe: 'include the leverage pairs',
+     alias: 'l',
+     type: 'boolean',
+     default: includesLeverage
+    })
+  }, dump)
+  .help()
+  .version()
+  .argv;
 }

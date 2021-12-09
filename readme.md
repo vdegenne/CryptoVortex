@@ -14,11 +14,15 @@ Pour chaque fonction voir les options disponibles avec `--help`
 ./src/vortex.ts binance-pairs
 ```
 
+will fetch all the available pairs on Binance and will save the result in `dumps/binance-pairs.json`
+
 **2. Appels et sauvegarde des informations de paires depuis Binance**
 
 ```
 ./src/vortex.ts binance
 ```
+
+will use the file `dumps/binance-pairs` filtered with `assets` and will fetch all the filtered pairs' information (klines). Dumps the result in `dump/pairs-klines.json`
 
 **3. Construction du fichier dump**
 
