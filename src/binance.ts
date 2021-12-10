@@ -2,11 +2,11 @@
 import ms from 'ms'
 import { Klines } from './klines';
 
-export async function fetchPairKlines (fetchMethod: Function, pair: string, startTime?: number, endTime?: number): Promise<Klines> {
-  let url = `https://www.binance.com/api/v3/klines?symbol=${pair}&interval=1d`;
+export async function fetchPairKlines (fetchMethod: Function, pair: string, unit: 'd'|'h'|'m' = 'd', startTime?: number, endTime?: number): Promise<Klines> {
+  let url = `https://www.binance.com/api/v3/klines?symbol=${pair}&interval=1${unit}`;
   if (!startTime) {
-    // 180 days by default
-    startTime = Date.now() - ms('180d')
+    // 180 units by default
+    startTime = Date.now() - ms(`180${unit}`)
   }
   url += `&startTime=${startTime}`
   if (endTime) {

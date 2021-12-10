@@ -1,6 +1,6 @@
 #!./node_modules/.bin/ts-node
 
-import _pairs from './binance-pairs.json'
+import _pairs from '../dumps/binance-pairs.json'
 import { getNewestClassement, buildPairsFromClassement, getPairsKobjectsVolumeClassement, getPairsKlinesVolumeClassement, getPairsKobjectsAscendingScoresClassement } from './classements';
 import { convertPairsKlinesToPairsKobjects, getCandidatePairs, PairsKlines, PairsKobjects } from './pairs';
 import yargs from 'yargs'

@@ -3,7 +3,7 @@
 import fs from 'fs'
 import yargs from 'yargs';
 import { buildPairsFromClassement, getPairsKlinesVolumeClassement } from './classements';
-import { assets, daysWindow, dumpSize, includesLeverage, volumeDays } from './defaults';
+import { assets, dumpSize, includesLeverage, unitsWidth, volumeDays } from './defaults';
 import { convertPairsKlinesToPairsKobjects, getCandidatePairs, PairsKlines } from "./pairs";
 import fetch from 'node-fetch'
 import { percent, round, wait } from './util';
@@ -81,7 +81,7 @@ async function binance (argv) {
   const candidates = getCandidatePairs(pairsNames, argv.assets, argv.assets)
   // candidates = ['ADAUSDT', 'ETHUSDT', ... ]
   console.log(`These assets will be fetched: ${argv.assets.join(', ')}`)
-  const pairsKlines = await getPairsKlinesFromBinance(candidates, argv.days, argv.pause, true)
+  const pairsKlines = await getPairsKlinesFromBinance(candidates, argv.unit, argv.days, argv.pause, true)
   // save the pairsKlines into a dump for general utilisation
   dumpPairsKlines()
   console.log(`Assets' information fetched`)
@@ -93,25 +93,29 @@ async function binance (argv) {
  * As the pairs' data is fetched from Binance, each pair's information is saved in separate
  * file on the filesystem for reusable purpose.
  */
-export async function getPairsKlinesFromBinance (pairs: string[], days: number = 180, pauseMs: number = 100, debug = false) {
+export async function getPairsKlinesFromBinance (pairsList: string[], unit: 'd'|'h'|'m' = 'd', klinesNumber: number = 180, pauseMs: number = 100, debug = false) {
   // @todo in this function we should check if the pair file exists
   // if it exists we fetch only the missing days.
   const pairsKlines: PairsKlines = {}
 
-  let i = 1, saveComplete
+  let pairsClone = pairsList.slice()
+  let nPerFetch = 2
   // @TODO: fetch 5 by 5 or so (with Promise)
-  for (const pair of pairs) {
-    if (debug) { console.log(`fetching ${pair}...`) }
-    // @TODO: unit (d, h, m) and save the parameters in a dump file for front feedback
-    const klines = await fetchPairKlines(fetch, pair, Date.now() - ms(`${days}d`))
-    // klines.pop() // we pop the last kline (which is the current day)
-    saveComplete = savePairInformation(pair, klines)
-    pairsKlines[pair] = klines;
-    if (debug) { console.log(`progression: ${(round((i * 100) / pairs.length))}%`) }
+  while (pairsClone.length) {
+    const pairs = pairsClone.splice(0, nPerFetch)
+    if (debug) { console.log(`fetching ${pairs.join(', ')}...`)}
+    pairs.map(pair => new Promise(async resolve => {
+      const klines = await fetchPairKlines(fetch, pair, unit, Date.now() - ms(`${klinesNumber}${unit}`))
+      // @TODO: save the parameters in a dump file for front feedback
+      // klines.pop() // we pop the last kline (which is the current day)
+      pairsKlines[pair] = klines;
+      savePairInformation(pair, klines)
+      resolve(null)
+    }))
+    await Promise.all(pairs)
+    if (debug) { console.log(`progression: ${(round(((pairsList.length - pairsClone.length) * 100) / pairsList.length))}%`) }
     await wait(pauseMs)
-    i++;
   }
-  await saveComplete
   return pairsKlines;
 }
 
@@ -179,13 +183,20 @@ function main () {
   .command('binance-pairs', 'fetch and save Binance available pairs', {}, async () => {
     await buildBinancePairs()
   })
-  .command('binance [days] [pause] [options]', 'fetch pairs\' information from Binance', (yargs) => {
+  .command('binance [unit] [days] [pause] [options]', 'fetch pairs\' information from Binance', (yargs) => {
     yargs
-    .positional('days', {
-      describe: 'window of days to fetch for each pair',
-      alias: 'd',
+    .positional('unit', {
+      describe: 'day (d), hour (h), minute (m)',
+      choices: ['d', 'h', 'm'],
+      alias: 'u',
+      type: 'string',
+      default: 'd'
+    })
+    .positional('width', {
+      describe: 'units width (how many candle) to fetch for each pair',
+      alias: 'w',
       type: 'number',
-      default: daysWindow
+      default: unitsWidth
     })
     .positional('pause', {
       describe: 'time to wait between each requests (milliseconds)',
