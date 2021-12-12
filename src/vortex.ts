@@ -10,7 +10,8 @@ import { percent, round, wait } from './util';
 import { fetchPairKlines } from './binance';
 import { savePairInformation } from './io';
 import ms from 'ms'
-import pairsNames from '../dumps/binance-pairs.json'
+import _pairsNames from '../dumps/binance-pairs.json'
+let pairsNames = _pairNames
 
 export type Dump = {
   [pair: string]: [string, number, number][]
@@ -72,12 +73,14 @@ async function buildBinancePairs () {
     }))
   // save the file
   fs.writeFileSync(`${__dirname}/../dumps/binance-pairs.json`, JSON.stringify(pairs))
+  pairsNames = pairs
 
   console.log(`saved ${pairs.length} pairs`)
 }
 
 
 async function binance (argv) {
+  await buildBinancePairs();
   const candidates = getCandidatePairs(pairsNames, argv.assets, argv.assets)
   // candidates = ['ADAUSDT', 'ETHUSDT', ... ]
   console.log(`These assets will be fetched: ${argv.assets.join(', ')}`)
