@@ -11,7 +11,7 @@ import { fetchPairKlines } from './binance';
 import { savePairInformation } from './io';
 import ms from 'ms'
 import _pairsNames from '../dumps/binance-pairs.json'
-let pairsNames = _pairNames
+let pairsNames = _pairsNames
 
 export type Dump = {
   [pair: string]: [string, number, number][]
