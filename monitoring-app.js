@@ -17,11 +17,13 @@ PERFORMANCE OF THIS SOFTWARE.
 var extendStatics = function(d, b) {
     extendStatics = Object.setPrototypeOf ||
         ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
     return extendStatics(d, b);
 };
 
 function __extends(d, b) {
+    if (typeof b !== "function" && b !== null)
+        throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
     extendStatics(d, b);
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
@@ -9500,6 +9502,7 @@ function convertKlineToKobject(kline) {
     };
 }
 function convertKlinesToKobjects(klines) {
+    console.log(klines);
     return klines.map(kline => convertKlineToKobject(kline));
 }
 
@@ -9513,6 +9516,7 @@ function getCandidatePairs(pairsNames, symbols = [], quotes = [], leverage = fal
 }
 function convertPairsKlinesToPairsKobjects(pairsKlines) {
     return Object.fromEntries(Object.entries(pairsKlines).map(([pair, klines]) => {
+        console.log(pair);
         return [pair, convertKlinesToKobjects(klines)];
     }));
 }
@@ -12408,11 +12412,11 @@ function plural(ms, msAbs, n, name) {
 }
 
 // import fetch from 'node-fetch'
-async function fetchPairKlines(fetchMethod, pair, startTime, endTime) {
-    let url = `https://www.binance.com/api/v3/klines?symbol=${pair}&interval=1d`;
+async function fetchPairKlines(fetchMethod, pair, unit = 'd', startTime, endTime) {
+    let url = `https://www.binance.com/api/v3/klines?symbol=${pair}&interval=1${unit}`;
     if (!startTime) {
-        // 180 days by default
-        startTime = Date.now() - ms('180d');
+        // 180 units by default
+        startTime = Date.now() - ms(`180${unit}`);
     }
     url += `&startTime=${startTime}`;
     if (endTime) {
@@ -12638,7 +12642,7 @@ let BinanceFetcher = class BinanceFetcher extends LitElement {
             if (!this.fetching) {
                 return; /* canceled */
             }
-            pairs[candidate] = await fetchPairKlines(fetch, candidate, Date.now() - ms(`${this.days}d`));
+            pairs[candidate] = await fetchPairKlines(fetch, candidate, 'd', Date.now() - ms(`${this.days}d`));
             this.progression = round((i * 100) / candidates.length);
             await wait(50);
             i++;

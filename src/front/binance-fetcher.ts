@@ -83,7 +83,7 @@ export class BinanceFetcher extends LitElement {
     let i = 1;
     for (const candidate of candidates) {
       if (!this.fetching) { return /* canceled */ }
-      pairs[candidate] = await fetchPairKlines(fetch, candidate, Date.now() - ms(`${this.days}d`))
+      pairs[candidate] = await fetchPairKlines(fetch, candidate, 'd', Date.now() - ms(`${this.days}d`))
       this.progression = round((i * 100) / candidates.length)
       await wait(50)
       i++;

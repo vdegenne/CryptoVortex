@@ -49,6 +49,7 @@ export function convertKlineToKobject (kline: Kline): Kobject {
 }
 
 export function convertKlinesToKobjects (klines: Klines): Kobject[] {
+  console.log(klines)
   return klines.map(kline => convertKlineToKobject(kline))
 }
 

@@ -26,6 +26,7 @@ export function getCandidatePairs (pairsNames: PairName[], symbols: string[] = [
 export function convertPairsKlinesToPairsKobjects (pairsKlines: PairsKlines): PairsKobjects {
   return Object.fromEntries(
     Object.entries(pairsKlines).map(([pair, klines]) => {
+      console.log(pair)
       return [pair, convertKlinesToKobjects(klines)]
     })
   )
