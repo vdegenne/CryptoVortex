@@ -3,8 +3,8 @@
 import fs from 'fs'
 import yargs from 'yargs';
 import { buildPairsFromClassement, getPairsKlinesVolumeClassement } from './classements';
-import { assets, dumpSize, includesLeverage, unitsWidth, volumeDays } from './defaults';
 import { convertPairsKlinesToPairsKobjects, getCandidatePairs, PairsKlines } from "./pairs";
+import { assets, dumpSize, includesLeverage, unitsWidth, volumeDays } from './defaults';
 import fetch from 'node-fetch'
 import { percent, round, wait } from './util';
 import { fetchPairKlines } from './binance';
@@ -84,7 +84,7 @@ async function binance (argv) {
   const candidates = getCandidatePairs(pairsNames, argv.assets, argv.assets)
   // candidates = ['ADAUSDT', 'ETHUSDT', ... ]
   console.log(`These assets will be fetched: ${argv.assets.join(', ')}`)
-  const pairsKlines = await getPairsKlinesFromBinance(candidates, argv.unit, argv.days, argv.pause, true)
+  const pairsKlines = await getPairsKlinesFromBinance(candidates, argv.unit, argv.width, argv.pause, true)
   // save the pairsKlines into a dump for general utilisation
   dumpPairsKlines()
   console.log(`Assets' information fetched`)
@@ -102,12 +102,12 @@ export async function getPairsKlinesFromBinance (pairsList: string[], unit: 'd'|
   const pairsKlines: PairsKlines = {}
 
   let pairsClone = pairsList.slice()
-  let nPerFetch = 2
+  let nPerFetch = 3
   // @TODO: fetch 5 by 5 or so (with Promise)
   while (pairsClone.length) {
-    const pairs = pairsClone.splice(0, nPerFetch)
+    let pairs: string[]|Promise<null>[] = pairsClone.splice(0, nPerFetch)
     if (debug) { console.log(`fetching ${pairs.join(', ')}...`)}
-    pairs.map(pair => new Promise(async resolve => {
+    pairs = pairs.map(pair => new Promise(async resolve => {
       const klines = await fetchPairKlines(fetch, pair, unit, Date.now() - ms(`${klinesNumber}${unit}`))
       // @TODO: save the parameters in a dump file for front feedback
       // klines.pop() // we pop the last kline (which is the current day)

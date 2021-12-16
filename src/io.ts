@@ -1,11 +1,11 @@
 import { Klines } from "./klines";
 import fs from 'fs'
 
-export function savePairInformation (pair: string, data: Klines): Promise<null> {
-  return new Promise(resolve => {
+export function savePairInformation (pair: string, data: Klines) {
+  // return new Promise(resolve => {
     fs.writeFileSync(`${__dirname}/../data/${pair}.json`, JSON.stringify(data))
-    resolve(null)
-  })
+    // resolve(null)
+  // })
 }
 
 export function pairFileExists (pair: string) {
