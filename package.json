@@ -30,6 +30,7 @@
   },
   "scripts": {
     "build": "rollup -c",
-    "watch": "rollup -cw"
+    "watch": "rollup -cw",
+    "browser-sync": "browser-sync . --files monitoring-app.js --no-notify"
   }
 }

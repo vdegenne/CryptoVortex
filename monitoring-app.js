@@ -9502,7 +9502,7 @@ function convertKlineToKobject(kline) {
     };
 }
 function convertKlinesToKobjects(klines) {
-    console.log(klines);
+    // console.log(klines)
     return klines.map(kline => convertKlineToKobject(kline));
 }
 
@@ -9516,7 +9516,7 @@ function getCandidatePairs(pairsNames, symbols = [], quotes = [], leverage = fal
 }
 function convertPairsKlinesToPairsKobjects(pairsKlines) {
     return Object.fromEntries(Object.entries(pairsKlines).map(([pair, klines]) => {
-        console.log(pair);
+        // console.log(pair)
         return [pair, convertKlinesToKobjects(klines)];
     }));
 }
