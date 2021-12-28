@@ -57,7 +57,7 @@ export class MonitoringApp extends LitElement {
   static styles = css`
   :host {
     display: block;
-    max-width: 800px;
+    /* max-width: 800px; */
     margin: 0 auto;
   }
   mwc-tab-bar {
