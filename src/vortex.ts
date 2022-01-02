@@ -10,7 +10,7 @@ import { percent, round, wait } from './util';
 import { fetchPairKlines } from './binance';
 import { savePairInformation } from './io';
 import ms from 'ms'
-import _pairsNames from '../dumps/binance-pairs.json'
+const _pairsNames = import('../dumps/binance-pairs.json')
 let pairsNames = _pairsNames
 import path from 'path'
 

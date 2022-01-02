@@ -1,6 +1,6 @@
 import typescript from '@rollup/plugin-typescript';
 import nodeResolve from '@rollup/plugin-node-resolve';
-import json from '@rollup/plugin-json'
+// import json from '@rollup/plugin-json'
 // import cjs from '@rollup/plugin-commonjs'
 
 export default {
@@ -12,6 +12,6 @@ export default {
   }),
   // cjs(),
   nodeResolve(),
-  json()
+  // json()
   ]
 }
