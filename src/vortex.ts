@@ -14,6 +14,8 @@ const _pairsNames = import('../dumps/binance-pairs.json')
 let pairsNames = _pairsNames
 import path from 'path'
 
+console.log(_pairsNames)
+process.exit(1);
 export type Dump = {
   [pair: string]: [string, number, number][]
 }
