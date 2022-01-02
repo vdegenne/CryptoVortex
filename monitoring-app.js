@@ -8370,7 +8370,13 @@ let VolumeView = class VolumeView extends s$1 {
             .map(([pair, klines]) => [pair, parseKlines(klines).map(k => k[volume_index])]);
         const winners = [];
         [6, 5, 4, 3].forEach(width => {
-            winners[width] = volumes.filter(([_, vols]) => JSON.stringify(vols.slice(-width)) === JSON.stringify(vols.slice(-width).sort()))
+            winners[width] = volumes.filter(([_, vols]) => {
+                const progressive = JSON.stringify(vols.slice(-width)) === JSON.stringify(vols.slice(-width).sort((a, b) => a - b));
+                if (progressive) {
+                    console.log(JSON.stringify(vols.slice(-width)), JSON.stringify(vols.slice(-width).sort((a, b) => a - b)));
+                }
+                return progressive;
+            })
                 .map(([pair, _]) => pair);
         });
         const widths = Object.getOwnPropertyNames(winners).filter(n => n !== 'length').sort((a, b) => parseInt(b) - parseInt(a));
@@ -8413,13 +8419,19 @@ let MonitoringApp = class MonitoringApp extends s$1 {
         this.tabIndex = 0;
         window.app = this;
         // Fetch data
-        Promise.all([fetchLocalPairsKlines(), fetchLocalBinancePairs()]).then(([raw, pairs]) => {
+        Promise.all([
+            fetchLocalPairsKlines(),
+            fetchLocalBinancePairs(),
+            fetch('./dumps/last-fetch-informations.json').then(res => res.json())
+        ]).then(([raw, pairs, fetchInfos]) => {
+            this.fetchInfos = fetchInfos;
             this.rawData = raw;
             this.binancePairs = pairs;
             this.updateData();
         });
     }
     render() {
+        var _a, _b, _c;
         return p `
     <div style="display:flex;align-items:center;justify-content:space-between">
       <mwc-textfield label="assets" value="${this.assets.join(',')}"
@@ -8431,6 +8443,8 @@ let MonitoringApp = class MonitoringApp extends s$1 {
           @change=${(e) => { this.removeLastDay = e.target.checked; this.updateData(); }}></mwc-checkbox>
       </mwc-formfield>
     </div>
+
+    <div style="margin: 24px 0">Last update : ${new Date(((_a = this.fetchInfos) === null || _a === void 0 ? void 0 : _a.date) || 0)} (${(_b = this.fetchInfos) === null || _b === void 0 ? void 0 : _b.width}${(_c = this.fetchInfos) === null || _c === void 0 ? void 0 : _c.unit})</div>
 
     <mwc-tab-bar style="margin: 30px 0;"
         @MDCTabBar:activated="${e => {

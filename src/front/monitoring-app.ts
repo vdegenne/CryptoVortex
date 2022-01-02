@@ -29,6 +29,8 @@ export class MonitoringApp extends LitElement {
   public rawData?: PairsKlines;
   public kObjects?: PairsKobjects;
 
+  private fetchInfos!: { date: number, unit: string, width: number };
+
   private assets = ['USDT']
   private removeLastDay = false;
 
@@ -44,7 +46,12 @@ export class MonitoringApp extends LitElement {
     window.app = this
 
     // Fetch data
-    Promise.all([fetchLocalPairsKlines(), fetchLocalBinancePairs()]).then(([raw, pairs]) => {
+    Promise.all([
+      fetchLocalPairsKlines(),
+      fetchLocalBinancePairs(),
+      fetch('./dumps/last-fetch-informations.json').then(res => res.json())
+    ]).then(([raw, pairs, fetchInfos]) => {
+      this.fetchInfos = fetchInfos
       this.rawData = raw
       this.binancePairs = pairs
       this.updateData()
@@ -83,6 +90,8 @@ export class MonitoringApp extends LitElement {
           @change=${(e) => {this.removeLastDay = e.target.checked; this.updateData()}}></mwc-checkbox>
       </mwc-formfield>
     </div>
+
+    <div style="margin: 24px 0">Last update : ${new Date(this.fetchInfos?.date || 0)} (${this.fetchInfos?.width}${this.fetchInfos?.unit})</div>
 
     <mwc-tab-bar style="margin: 30px 0;"
         @MDCTabBar:activated="${e => {

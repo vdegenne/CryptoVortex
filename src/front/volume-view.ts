@@ -25,7 +25,13 @@ export class VolumeView extends LitElement {
 
     const winners: string[][] = []
     ;[6, 5, 4, 3].forEach(width => {
-      winners[width] = volumes.filter(([_, vols]) => JSON.stringify(vols.slice(-width)) === JSON.stringify(vols.slice(-width).sort()))
+      winners[width] = volumes.filter(([_, vols]) => {
+        const progressive = JSON.stringify(vols.slice(-width)) === JSON.stringify(vols.slice(-width).sort((a, b) => a - b))
+        if (progressive) {
+          console.log(JSON.stringify(vols.slice(-width)), JSON.stringify(vols.slice(-width).sort((a, b) => a - b)))
+        }
+        return progressive
+      })
       .map(([pair, _]) => pair)
     })
 

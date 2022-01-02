@@ -10,23 +10,18 @@ import { percent, round, wait } from './util';
 import { fetchPairKlines } from './binance';
 import { savePairInformation } from './io';
 import ms from 'ms'
-const _pairsNames = import('../dumps/binance-pairs.json')
+import _pairsNames from '../dumps/binance-pairs.json'
 let pairsNames = _pairsNames
 import path from 'path'
 
-console.log(_pairsNames)
-process.exit(1);
 export type Dump = {
   [pair: string]: [string, number, number][]
 }
 
-/*** VORTEX, sniff all the data Muahahahaha */
+/******************************************
+ * VORTEX™, sniff em all Muahahahaha      *
+ ******************************************/
 async function Vortex (argv) {
-  fs.writeFileSync(path.resolve('dumps', 'last-fetch-informations.json'), JSON.stringify({
-    date: Date.now(),
-    width: argv.width,
-    unit: argv.unit
-  }))
   await buildBinancePairs();
   const candidates = getCandidatePairs(pairsNames, argv.assets, argv.assets)
   // candidates = ['ADAUSDT', 'ETHUSDT', ... ]
@@ -34,6 +29,11 @@ async function Vortex (argv) {
   const pairsKlines = await getPairsKlinesFromBinance(candidates, argv.unit, argv.width, argv.pause, true)
   // save the pairsKlines into a dump for general use
   dumpPairsKlines()
+  fs.writeFileSync(path.resolve('dumps', 'last-fetch-informations.json'), JSON.stringify({
+    date: Date.now(),
+    width: argv.width,
+    unit: argv.unit
+  }))
   console.log(`Assets' information fetched`)
 }
 
