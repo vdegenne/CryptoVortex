@@ -1,7 +1,8 @@
-import { css, customElement, html, LitElement, property } from "lit-element";
+import { css, html, LitElement } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
 import { getPairsNameObjectFromName } from "../pairs";
 import globalStyles from "./globalStyles";
-import { visitBinance } from "./util";
+import { goToCryptowatch } from "./util";
 
 @customElement('pair-button')
 export class PairButton extends LitElement {
@@ -21,7 +22,7 @@ export class PairButton extends LitElement {
     super()
     this.addEventListener('click', e => {
       const { s, q } = getPairsNameObjectFromName(window.app.binancePairs, this.name)!
-      visitBinance(s, q)
+      goToCryptowatch(s, q)
     })
   }
 

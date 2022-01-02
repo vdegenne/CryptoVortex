@@ -1,4 +1,5 @@
-import { customElement, html, LitElement, property } from "lit-element";
+import { html, LitElement } from 'lit';
+import { customElement, property } from 'lit/decorators.js';
 import { Map } from '../maps'
 import { ageFunction } from "../monitoring-functions";
 import { round } from "../util";
@@ -36,7 +37,7 @@ export class AgeView extends LitElement {
   }
 
   private onCalculateClick() {
-    this.results = ageFunction(window.app.data, {
+    this.results = ageFunction(window.app.kObjects!, {
       age: this.age,
       equal: true
     })

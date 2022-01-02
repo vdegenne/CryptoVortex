@@ -12,10 +12,29 @@ import { savePairInformation } from './io';
 import ms from 'ms'
 import _pairsNames from '../dumps/binance-pairs.json'
 let pairsNames = _pairsNames
+const path = require('path')
 
 export type Dump = {
   [pair: string]: [string, number, number][]
 }
+
+/*** VORTEX, sniff all the data Muahahahaha */
+async function Vortex (argv) {
+  await buildBinancePairs();
+  const candidates = getCandidatePairs(pairsNames, argv.assets, argv.assets)
+  // candidates = ['ADAUSDT', 'ETHUSDT', ... ]
+  console.log(`These assets will be fetched: ${argv.assets.join(', ')}`)
+  const pairsKlines = await getPairsKlinesFromBinance(candidates, argv.unit, argv.width, argv.pause, true)
+  // save the pairsKlines into a dump for general use
+  dumpPairsKlines()
+  fs.writeFileSync(path.resolve('dumps', 'last-fetch-informations.json'), JSON.stringify({
+    date: Date.now(),
+    width: argv.width,
+    unit: argv.unit
+  }))
+  console.log(`Assets' information fetched`)
+}
+
 
 export function vortexDump (pairs: PairsKlines) {
   return Object.fromEntries(
@@ -59,7 +78,7 @@ export function saveVortexDumpToFile (dump: Dump) {
 
 async function buildBinancePairs () {
   const response = await fetch(`https://www.binance.com/api/v3/exchangeInfo`)
-  const data = await response.json()
+  const data: any = await response.json()
 
   // save the file locally
   fs.writeFileSync(`${__dirname}/../binance/exchangeInfo.json`, JSON.stringify(data))
@@ -79,16 +98,6 @@ async function buildBinancePairs () {
 }
 
 
-async function binance (argv) {
-  await buildBinancePairs();
-  const candidates = getCandidatePairs(pairsNames, argv.assets, argv.assets)
-  // candidates = ['ADAUSDT', 'ETHUSDT', ... ]
-  console.log(`These assets will be fetched: ${argv.assets.join(', ')}`)
-  const pairsKlines = await getPairsKlinesFromBinance(candidates, argv.unit, argv.width, argv.pause, true)
-  // save the pairsKlines into a dump for general utilisation
-  dumpPairsKlines()
-  console.log(`Assets' information fetched`)
-}
 
 /**
  * This function hits two birds with one rock.
@@ -207,7 +216,7 @@ function main () {
       type: 'number',
       default: 150
     })
-  }, binance)
+  }, Vortex)
   .command('dump [size] [volumeDays] [leverage]', 'convert the data slurped by the vortex into a usable json\nvolume sorted and trimmed to size', (yargs) => {
     yargs
     .positional('size', {

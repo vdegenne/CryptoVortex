@@ -1,4 +1,3 @@
-import { customElement, html, LitElement, property } from "lit-element";
 import '@material/mwc-textfield'
 import '@material/mwc-button'
 import '@material/mwc-icon'
@@ -8,6 +7,8 @@ import { pairsEvolutionScores } from "../monitoring-functions";
 import './pair-button'
 import { Map } from "../maps";
 import { round } from "../util";
+import { customElement, property } from 'lit/decorators.js';
+import { html, LitElement } from 'lit';
 
 @customElement('evolutions-view')
 export class EvolutionsView extends LitElement {
@@ -65,7 +66,7 @@ export class EvolutionsView extends LitElement {
   }
 
   private onCalculateClick() {
-    this.results = pairsEvolutionScores(window.app.data, {
+    this.results = pairsEvolutionScores(window.app.kObjects!, {
       days: this.days,
       minDays: this.minDays,
       size: this.size,

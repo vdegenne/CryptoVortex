@@ -32,11 +32,11 @@ export function convertPairsKlinesToPairsKobjects (pairsKlines: PairsKlines): Pa
   )
 }
 
-export function getPairsNameObjectFromName (pairsNames: PairName[], name: string) {
+export function getPairsNameObjectFromName (pairsNames: PairName[], name: string): PairName|undefined {
   return pairsNames.find(object => `${object.s}${object.q}` === name);
 }
 
-export function popLastDays (pairs: PairsKobjects) {
+export function popLastUnit (pairs: PairsKobjects) {
   for (const pairsKobjects of Object.values(pairs)) {
     pairsKobjects.pop()
   }

@@ -1,4 +1,5 @@
-import {css, customElement, html, LitElement, property, query} from 'lit-element'
+import { css, html, LitElement, PropertyDeclaration } from 'lit'
+import { customElement, property, query, state } from 'lit/decorators.js'
 import '@material/mwc-tab-bar'
 import '@material/mwc-textfield'
 import './percents-view'
@@ -7,14 +8,14 @@ import '@material/mwc-formfield'
 import '@material/mwc-checkbox'
 import {Checkbox} from '@material/mwc-checkbox'
 // import data from '../../dumps/pairs-klines.json'
-import { convertPairsKlinesToPairsKobjects, getCandidatePairs, PairsKobjects, PairName, popLastDays, PairsKlines } from '../pairs';
+import { convertPairsKlinesToPairsKobjects, getCandidatePairs, PairsKobjects, PairName, popLastUnit, PairsKlines } from '../pairs';
 import { filterPairsKlinesFromCandidates } from '../filters';
-import { fetchBinancePairs, fetchLocalBinancePairs, fetchLocalPairsKlines } from './util'
-import './binance-fetcher'
-import { BinanceFetcher } from './binance-fetcher'
+import { fetchLocalBinancePairs, fetchLocalPairsKlines } from './util'
 import { TextField } from '@material/mwc-textfield'
 import './strict-evolutions'
 import './age-view'
+import './volume-view'
+import { VolumeView } from './volume-view'
 
 declare global {
   interface Window {
@@ -24,34 +25,30 @@ declare global {
 
 @customElement('monitoring-app')
 export class MonitoringApp extends LitElement {
-  private assets = ['USDT']
-  private removeLastDays = false;
-
-  @property({type:Array})
   public binancePairs: PairName[] = [];
+  public rawData?: PairsKlines;
+  public kObjects?: PairsKobjects;
 
-  private binanceFetcher = new BinanceFetcher()
+  private assets = ['USDT']
+  private removeLastDay = false;
 
   @property({type: Number})
   public tabIndex = 0;
 
-  public pairsKlines?: PairsKlines;
-  public data!: PairsKobjects;
 
   @query('mwc-textfield[label=assets]') assetsTextField!: TextField;
+  @query('volume-view') volumeView!: VolumeView;
 
   constructor() {
     super()
+    window.app = this
 
-    fetchLocalBinancePairs().then(async (pairs) => {
-      // When the application first start
-      // we get the local data for fast rendering
-      this.binancePairs = pairs;
-      this.pairsKlines = await fetchLocalPairsKlines()
+    // Fetch data
+    Promise.all([fetchLocalPairsKlines(), fetchLocalBinancePairs()]).then(([raw, pairs]) => {
+      this.rawData = raw
+      this.binancePairs = pairs
       this.updateData()
     })
-
-    window.app = this;
   }
 
   static styles = css`
@@ -83,10 +80,8 @@ export class MonitoringApp extends LitElement {
         @change="${() => this.onAssetsChange()}"></mwc-textfield>
       <mwc-formfield label="remove incomplete current day">
         <mwc-checkbox
-          @click="${(e) => this.onRemoveIncompleteLastDays(e)}"></mwc-checkbox>
+          @change=${(e) => {this.removeLastDay = e.target.checked; this.updateData()}}></mwc-checkbox>
       </mwc-formfield>
-      <mwc-icon-button icon="cloud_download"
-        @click="${() => this.binanceFetcher.show()}"></mwc-icon-button>
     </div>
 
     <mwc-tab-bar style="margin: 30px 0;"
@@ -100,6 +95,7 @@ export class MonitoringApp extends LitElement {
       <mwc-tab label="strict ascendings"></mwc-tab>
       <mwc-tab label="strict descendings"></mwc-tab>
       <mwc-tab label="age"></mwc-tab>
+      <mwc-tab label="volumes"></mwc-tab>
     </mwc-tab-bar>
 
     <percents-view class="view" ?show="${this.tabIndex === 0}" croissant></percents-view>
@@ -109,19 +105,17 @@ export class MonitoringApp extends LitElement {
     <strict-evolutions class="view" ?show="${this.tabIndex === 4}" ascending></strict-evolutions>
     <strict-evolutions class="view" ?show="${this.tabIndex === 5}"></strict-evolutions>
     <age-view class="view" ?show="${this.tabIndex === 6}"></age-view>
-
-    ${this.binanceFetcher}
+    <volume-view class="view" ?show=${this.tabIndex === 7}></volume-view>
     `
   }
 
-  private onRemoveIncompleteLastDays(e: Event) {
-    const target = e.target as Checkbox;
-    setTimeout(() => {
-      this.removeLastDays = target.checked
-      this.updateData()
-      this.requestUpdate()
-    }, 200)
-  }
+  // private removeIncompleteLastDay(remove: boolean) {
+  //   const target = e.target as Checkbox;
+  //   setTimeout(() => {
+  //     this.removeLastDay = target.checked
+  //     this.updateData()
+  //   }, 200)
+  // }
 
   private onAssetsChange() {
     this.assets = this.assetsTextField.value.split(',')
@@ -130,22 +124,37 @@ export class MonitoringApp extends LitElement {
   }
 
   public updateData () {
-    this.data = convertPairsKlinesToPairsKobjects(
+    // Converting kLines to kObjects for easier use
+    this.kObjects = convertPairsKlinesToPairsKobjects(
       filterPairsKlinesFromCandidates(
-        this.pairsKlines!,
-        this.getCandidates(this.assets)
+        this.rawData!,
+        getCandidatePairs(this.binancePairs, [], this.assets)
       )
     )
-    if (this.removeLastDays) {
-      popLastDays(this.data)
+
+    if (this.removeLastDay) {
+      popLastUnit(this.kObjects)
     }
+
+    this.updateViews()
+    // this.requestUpdate()
   }
 
-  public getCandidates (assets: string[]) {
-    return getCandidatePairs(this.binancePairs, assets, assets)
+  public updateViews() {
+    this.volumeView.requestUpdate()
+    this.requestUpdate()
   }
 
-  public async updateBinancePairs () {
-    this.binancePairs = await fetchBinancePairs()
-  }
+  // requestUpdate(name?: PropertyKey, oldValue?: unknown, options?: PropertyDeclaration<unknown, unknown>): void {
+  //   this.tabIndex === 7 && this.volumeView && this.volumeView.requestUpdate()
+  //   super.requestUpdate(name, oldValue, options)
+  // }
+
+  // public getCandidates (assets: string[]) {
+  //   return getCandidatePairs(this.binancePairs, [], assets)
+  // }
+
+  // public async updateBinancePairs () {
+  //   this.binancePairs = await fetchBinancePairs()
+  // }
 }
