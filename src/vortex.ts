@@ -12,7 +12,7 @@ import { savePairInformation } from './io';
 import ms from 'ms'
 import _pairsNames from '../dumps/binance-pairs.json'
 let pairsNames = _pairsNames
-const path = require('path')
+import path from 'path'
 
 export type Dump = {
   [pair: string]: [string, number, number][]
@@ -20,6 +20,11 @@ export type Dump = {
 
 /*** VORTEX, sniff all the data Muahahahaha */
 async function Vortex (argv) {
+  fs.writeFileSync(path.resolve('dumps', 'last-fetch-informations.json'), JSON.stringify({
+    date: Date.now(),
+    width: argv.width,
+    unit: argv.unit
+  }))
   await buildBinancePairs();
   const candidates = getCandidatePairs(pairsNames, argv.assets, argv.assets)
   // candidates = ['ADAUSDT', 'ETHUSDT', ... ]
@@ -27,11 +32,6 @@ async function Vortex (argv) {
   const pairsKlines = await getPairsKlinesFromBinance(candidates, argv.unit, argv.width, argv.pause, true)
   // save the pairsKlines into a dump for general use
   dumpPairsKlines()
-  fs.writeFileSync(path.resolve('dumps', 'last-fetch-informations.json'), JSON.stringify({
-    date: Date.now(),
-    width: argv.width,
-    unit: argv.unit
-  }))
   console.log(`Assets' information fetched`)
 }
 
