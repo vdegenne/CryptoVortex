@@ -56,7 +56,7 @@ export class PercentsView extends LitElement {
   }
 
   private onCalculateClick() {
-    this.results = pairsEvolutions(window.app.kObjects!, {
+    this.results = pairsEvolutions(window.app.klines!, {
       days: this.days,
       size: this.size,
       croissant: this.croissant

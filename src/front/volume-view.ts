@@ -24,7 +24,7 @@ export class VolumeView extends LitElement {
       .map<[string, number[]]>(([pair, klines]) => [pair, parseKlines(klines).map(k => k[volume_index])])
 
     const winners: string[][] = []
-    ;[6, 5, 4, 3].forEach(width => {
+    ;[6, 5, 4, 3, 2].forEach(width => {
       winners[width] = volumes.filter(([_, vols]) => {
         const progressive = JSON.stringify(vols.slice(-width)) === JSON.stringify(vols.slice(-width).sort((a, b) => a - b))
         if (progressive) {

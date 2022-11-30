@@ -27,6 +27,6 @@
   "scripts": {
     "build": "rollup -c",
     "watch": "rollup -cw",
-    "browser-sync": "browser-sync start --proxy http://localhost:8666/ --files monitoring-app.js --no-notify"
+    "browser-sync": "browser-sync . --files monitoring-app.js --no-notify"
   }
 }
