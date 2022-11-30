@@ -66,7 +66,7 @@ export class EvolutionsView extends LitElement {
   }
 
   private onCalculateClick() {
-    this.results = pairsEvolutionScores(window.app.kObjects!, {
+    this.results = pairsEvolutionScores(window.app.klines!, {
       days: this.days,
       minDays: this.minDays,
       size: this.size,

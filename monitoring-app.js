@@ -7670,7 +7670,7 @@ let PercentsView = class PercentsView extends s$1 {
     `;
     }
     onCalculateClick() {
-        this.results = pairsEvolutions(window.app.kObjects, {
+        this.results = pairsEvolutions(window.app.klines, {
             days: this.days,
             size: this.size,
             croissant: this.croissant
@@ -7739,7 +7739,7 @@ let EvolutionsView = class EvolutionsView extends s$1 {
     `;
     }
     onCalculateClick() {
-        this.results = pairsEvolutionScores(window.app.kObjects, {
+        this.results = pairsEvolutionScores(window.app.klines, {
             days: this.days,
             minDays: this.minDays,
             size: this.size,
@@ -8247,74 +8247,50 @@ Checkbox = __decorate([
 ], Checkbox);
 
 let StrictEvolutions = class StrictEvolutions extends s$1 {
-    constructor() {
-        super(...arguments);
+    constructor(app) {
+        super();
         this.ascending = false;
-        this.days = 5;
-        this.minDays = 5;
-        this.size = 10;
-        this.results = [];
+        this.app = app;
     }
     render() {
+        if (this.app.klines == undefined) {
+            this.app.initialFetchComplete.then(() => {
+                this.requestUpdate();
+            });
+            return T;
+        }
+        const results = [];
+        for (const length of [2, 3, 4, 5, 6, 7, 8, 9, 10, 11]) {
+            results[length] =
+                strictEvolutions(this.app.klines, {
+                    days: length,
+                    minDays: 10,
+                    size: 1000,
+                    ascending: this.ascending
+                });
+        }
+        console.log('test', results);
         return p `
-    <div class="flex">
-      <span>Days</span><mwc-icon title="nombre de bougies (à partir du jour actuel)">help_outline</mwc-icon>
-    </div>
-    <mwc-slider max="100" min="1" step="1" pin markers
-      @change="${e => this.days = e.target.value}"
-      value="${this.days}"></mwc-slider>
-
-    <div class="flex">
-      <span>minDays</span><mwc-icon title="number of days minimum the pairs has to have.">help_outline</mwc-icon>
-    </div>
-    <mwc-slider max="100" min="1" step="1" pin markers
-      @change="${e => this.minDays = e.target.value}"
-      value="${this.minDays}"></mwc-slider>
-
-    <div class="flex">
-      <span>Size</span><mwc-icon title="Taille de la liste finale">help_outline</mwc-icon>
-    </div>
-    <mwc-slider max="40" min="1" step="1" pin markers
-      @change="${(e) => this.size = e.target.value}"
-      value="${this.size}"></mwc-slider>
-
-    <mwc-button unelevated
-      @click="${() => this.onCalculateClick()}">calculate</mwc-button>
-
-    <div id="results">
-    ${this.results.map(r => {
-            return p `<pair-button name="${r[0]}" value="${round(r[1])}%" colors></pair-button>`;
+    <div id="results" style="display:flex;flex-direction:column-reverse">
+    ${results.map((l, length) => {
+            if (l.length == 0) {
+                return T;
+            }
+            return p `
+      <div>
+        <h2>${length}</h2>
+        ${l.map(r => {
+                return p `<pair-button name="${r[0]}" value="${round(r[1])}%" colors></pair-button>`;
+            })}
+      </div>`;
         })}
     </div>
     `;
     }
-    onCalculateClick() {
-        this.results = strictEvolutions(window.app.kObjects, {
-            days: this.days,
-            minDays: this.minDays,
-            size: this.size,
-            ascending: this.ascending
-        });
-    }
 };
-StrictEvolutions.styles = [
-    globalStyles
-];
 __decorate([
     e$3({ type: Boolean, reflect: true })
 ], StrictEvolutions.prototype, "ascending", void 0);
-__decorate([
-    e$3({ type: Number })
-], StrictEvolutions.prototype, "days", void 0);
-__decorate([
-    e$3({ type: Number })
-], StrictEvolutions.prototype, "minDays", void 0);
-__decorate([
-    e$3({ type: Number })
-], StrictEvolutions.prototype, "size", void 0);
-__decorate([
-    e$3({ type: Array })
-], StrictEvolutions.prototype, "results", void 0);
 StrictEvolutions = __decorate([
     n('strict-evolutions')
 ], StrictEvolutions);
@@ -8343,7 +8319,7 @@ let AgeView = class AgeView extends s$1 {
     `;
     }
     onCalculateClick() {
-        this.results = ageFunction(window.app.kObjects, {
+        this.results = ageFunction(window.app.klines, {
             age: this.age,
             equal: true
         });
@@ -8369,7 +8345,7 @@ let VolumeView = class VolumeView extends s$1 {
         const volumes = Object.entries(window.app.rawData)
             .map(([pair, klines]) => [pair, parseKlines(klines).map(k => k[volume_index])]);
         const winners = [];
-        [6, 5, 4, 3].forEach(width => {
+        [6, 5, 4, 3, 2].forEach(width => {
             winners[width] = volumes.filter(([_, vols]) => {
                 const progressive = JSON.stringify(vols.slice(-width)) === JSON.stringify(vols.slice(-width).sort((a, b) => a - b));
                 if (progressive) {
@@ -8416,8 +8392,13 @@ let MonitoringApp = class MonitoringApp extends s$1 {
         this.binancePairs = [];
         this.assets = ['USDT'];
         this.removeLastDay = false;
+        this.initialFetchPromise = Promise.resolve();
         this.tabIndex = 0;
         window.app = this;
+        let resolve;
+        this.initialFetchPromise = new Promise((_resolve, _reject) => {
+            resolve = _resolve;
+        });
         // Fetch data
         Promise.all([
             fetchLocalPairsKlines(),
@@ -8428,7 +8409,11 @@ let MonitoringApp = class MonitoringApp extends s$1 {
             this.rawData = raw;
             this.binancePairs = pairs;
             this.updateData();
+            resolve(this.klines);
         });
+    }
+    get initialFetchComplete() {
+        return this.initialFetchPromise;
     }
     render() {
         var _a, _b, _c;
@@ -8464,8 +8449,8 @@ let MonitoringApp = class MonitoringApp extends s$1 {
     <percents-view class="view" ?show="${this.tabIndex === 1}"></percents-view>
     <evolutions-view class="view" ?show="${this.tabIndex === 2}" croissant></evolutions-view>
     <evolutions-view class="view" ?show="${this.tabIndex === 3}"></evolutions-view>
-    <strict-evolutions class="view" ?show="${this.tabIndex === 4}" ascending></strict-evolutions>
-    <strict-evolutions class="view" ?show="${this.tabIndex === 5}"></strict-evolutions>
+    <strict-evolutions .app=${this} class="view" ?show="${this.tabIndex === 4}" ascending></strict-evolutions>
+    <strict-evolutions .app=${this} class="view" ?show="${this.tabIndex === 5}"></strict-evolutions>
     <age-view class="view" ?show="${this.tabIndex === 6}"></age-view>
     <volume-view class="view" ?show=${this.tabIndex === 7}></volume-view>
     `;
@@ -8484,9 +8469,9 @@ let MonitoringApp = class MonitoringApp extends s$1 {
     }
     updateData() {
         // Converting kLines to kObjects for easier use
-        this.kObjects = convertPairsKlinesToPairsKobjects(filterPairsKlinesFromCandidates(this.rawData, getCandidatePairs(this.binancePairs, [], this.assets)));
+        this.klines = convertPairsKlinesToPairsKobjects(filterPairsKlinesFromCandidates(this.rawData, getCandidatePairs(this.binancePairs, [], this.assets)));
         if (this.removeLastDay) {
-            popLastUnit(this.kObjects);
+            popLastUnit(this.klines);
         }
         this.updateViews();
         // this.requestUpdate()

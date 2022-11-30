@@ -37,7 +37,7 @@ export class AgeView extends LitElement {
   }
 
   private onCalculateClick() {
-    this.results = ageFunction(window.app.kObjects!, {
+    this.results = ageFunction(window.app.klines!, {
       age: this.age,
       equal: true
     })

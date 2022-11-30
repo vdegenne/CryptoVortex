@@ -27,16 +27,20 @@ declare global {
 export class MonitoringApp extends LitElement {
   public binancePairs: PairName[] = [];
   public rawData?: PairsKlines;
-  public kObjects?: PairsKobjects;
+  public klines?: PairsKobjects;
 
   private fetchInfos!: { date: number, unit: string, width: number };
 
   private assets = ['USDT']
   private removeLastDay = false;
 
+  private initialFetchPromise = Promise.resolve();
+  get initialFetchComplete () {
+    return this.initialFetchPromise;
+  }
+
   @property({type: Number})
   public tabIndex = 0;
-
 
   @query('mwc-textfield[label=assets]') assetsTextField!: TextField;
   @query('volume-view') volumeView!: VolumeView;
@@ -44,6 +48,12 @@ export class MonitoringApp extends LitElement {
   constructor() {
     super()
     window.app = this
+
+    let resolve, reject
+    this.initialFetchPromise = new Promise((_resolve, _reject) => {
+      resolve = _resolve
+      reject = _reject
+    })
 
     // Fetch data
     Promise.all([
@@ -55,6 +65,7 @@ export class MonitoringApp extends LitElement {
       this.rawData = raw
       this.binancePairs = pairs
       this.updateData()
+      resolve(this.klines)
     })
   }
 
@@ -111,8 +122,8 @@ export class MonitoringApp extends LitElement {
     <percents-view class="view" ?show="${this.tabIndex === 1}"></percents-view>
     <evolutions-view class="view" ?show="${this.tabIndex === 2}" croissant></evolutions-view>
     <evolutions-view class="view" ?show="${this.tabIndex === 3}"></evolutions-view>
-    <strict-evolutions class="view" ?show="${this.tabIndex === 4}" ascending></strict-evolutions>
-    <strict-evolutions class="view" ?show="${this.tabIndex === 5}"></strict-evolutions>
+    <strict-evolutions .app=${this} class="view" ?show="${this.tabIndex === 4}" ascending></strict-evolutions>
+    <strict-evolutions .app=${this} class="view" ?show="${this.tabIndex === 5}"></strict-evolutions>
     <age-view class="view" ?show="${this.tabIndex === 6}"></age-view>
     <volume-view class="view" ?show=${this.tabIndex === 7}></volume-view>
     `
@@ -132,9 +143,9 @@ export class MonitoringApp extends LitElement {
     this.requestUpdate()
   }
 
-  public updateData () {
+  updateData () {
     // Converting kLines to kObjects for easier use
-    this.kObjects = convertPairsKlinesToPairsKobjects(
+    this.klines = convertPairsKlinesToPairsKobjects(
       filterPairsKlinesFromCandidates(
         this.rawData!,
         getCandidatePairs(this.binancePairs, [], this.assets)
@@ -142,7 +153,7 @@ export class MonitoringApp extends LitElement {
     )
 
     if (this.removeLastDay) {
-      popLastUnit(this.kObjects)
+      popLastUnit(this.klines)
     }
 
     this.updateViews()
