@@ -42,10 +42,9 @@ export class StrictEvolutions extends LitElement {
           ascending: this.ascending
         })
     }
-    console.log('test', results)
 
     return html`
-    <div id="results" style="display:flex;flex-direction:column-reverse">
+    <div style="display:flex;flex-direction:column-reverse;max-width:500px;margin:0 auto;">
     ${results.map((l, length) => {
       if (l.length == 0) { return nothing }
       return html`

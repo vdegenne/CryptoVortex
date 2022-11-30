@@ -18,9 +18,9 @@ export class VolumeView extends LitElement {
   `
 
   render () {
-    if (window.app.rawData === undefined) return nothing
+    if (window.app.raw === undefined) return nothing
 
-    const volumes = Object.entries(window.app.rawData)
+    const volumes = Object.entries(window.app.raw)
       .map<[string, number[]]>(([pair, klines]) => [pair, parseKlines(klines).map(k => k[volume_index])])
 
     const winners: string[][] = []

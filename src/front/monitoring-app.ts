@@ -8,9 +8,9 @@ import '@material/mwc-formfield'
 import '@material/mwc-checkbox'
 import {Checkbox} from '@material/mwc-checkbox'
 // import data from '../../dumps/pairs-klines.json'
-import { convertPairsKlinesToPairsKobjects, getCandidatePairs, PairsKobjects, PairName, popLastUnit, PairsKlines } from '../pairs';
+import { convertPairsKlinesToPairsKobjects, getCandidatePairs, PairsKobjects, PairName, popLastUnit, PairsKlines, getPairsNameObjectFromName } from '../pairs';
 import { filterPairsKlinesFromCandidates } from '../filters';
-import { fetchLocalBinancePairs, fetchLocalPairsKlines } from './util'
+import { fetchLocalBinancePairs, fetchLocalPairsKlines, goToCryptowatch } from './util'
 import { TextField } from '@material/mwc-textfield'
 import './strict-evolutions'
 import './age-view'
@@ -108,24 +108,24 @@ export class MonitoringApp extends LitElement {
         @MDCTabBar:activated="${e => {
           this.tabIndex = e.detail.index
         }}">
+      <mwc-tab label="age"></mwc-tab>
+      <mwc-tab label="strict ascendings"></mwc-tab>
+      <mwc-tab label="strict descendings"></mwc-tab>
+      <mwc-tab label="volumes"></mwc-tab>
       <mwc-tab label="% negatif"></mwc-tab>
       <mwc-tab label="% positif"></mwc-tab>
       <mwc-tab label="chutes (scores)"></mwc-tab>
       <mwc-tab label="montées (scores)"></mwc-tab>
-      <mwc-tab label="strict ascendings"></mwc-tab>
-      <mwc-tab label="strict descendings"></mwc-tab>
-      <mwc-tab label="age"></mwc-tab>
-      <mwc-tab label="volumes"></mwc-tab>
     </mwc-tab-bar>
 
-    <percents-view class="view" ?show="${this.tabIndex === 0}" croissant></percents-view>
-    <percents-view class="view" ?show="${this.tabIndex === 1}"></percents-view>
-    <evolutions-view class="view" ?show="${this.tabIndex === 2}" croissant></evolutions-view>
-    <evolutions-view class="view" ?show="${this.tabIndex === 3}"></evolutions-view>
-    <strict-evolutions .app=${this} class="view" ?show="${this.tabIndex === 4}" ascending></strict-evolutions>
-    <strict-evolutions .app=${this} class="view" ?show="${this.tabIndex === 5}"></strict-evolutions>
-    <age-view class="view" ?show="${this.tabIndex === 6}"></age-view>
-    <volume-view class="view" ?show=${this.tabIndex === 7}></volume-view>
+    <age-view .app=${this} class="view" ?show="${this.tabIndex === 0}"></age-view>
+    <strict-evolutions .app=${this} class="view" ?show="${this.tabIndex === 1}" ascending></strict-evolutions>
+    <strict-evolutions .app=${this} class="view" ?show="${this.tabIndex === 2}"></strict-evolutions>
+    <volume-view class="view" ?show=${this.tabIndex === 3}></volume-view>
+    <percents-view class="view" ?show="${this.tabIndex === 4}" croissant></percents-view>
+    <percents-view class="view" ?show="${this.tabIndex === 5}"></percents-view>
+    <evolutions-view class="view" ?show="${this.tabIndex === 6}" croissant></evolutions-view>
+    <evolutions-view class="view" ?show="${this.tabIndex === 7}"></evolutions-view>
     `
   }
 
@@ -163,6 +163,11 @@ export class MonitoringApp extends LitElement {
   public updateViews() {
     this.volumeView.requestUpdate()
     this.requestUpdate()
+  }
+
+  goToCryptowatch(pair: any) {
+    const {s: symbol, q: quote} = getPairsNameObjectFromName(this.binancePairs, pair)!
+    goToCryptowatch(symbol, quote)
   }
 
   // requestUpdate(name?: PropertyKey, oldValue?: unknown, options?: PropertyDeclaration<unknown, unknown>): void {

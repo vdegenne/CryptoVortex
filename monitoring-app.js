@@ -7500,17 +7500,6 @@ function strictEvolutions(pairs, argv) {
     let evolutions = filterStrictEvolutions(pairs, argv.ascending, argv.days, argv.minDays);
     return sortMap(mapEvolutions(evolutions, argv.days), false).slice(0, argv.size);
 }
-function ageFunction(pairs, argv) {
-    return sortMap(Object.entries(pairs).filter(o => {
-        if (argv.equal) {
-            return o[1].length <= argv.age;
-        }
-        else {
-            return o[1].length < argv.age;
-        }
-    })
-        .map(([pair, o]) => [pair, o.length]), true);
-}
 
 const open_time_index = 0;
 const open_index = 1;
@@ -8269,9 +8258,8 @@ let StrictEvolutions = class StrictEvolutions extends s$1 {
                     ascending: this.ascending
                 });
         }
-        console.log('test', results);
         return p `
-    <div id="results" style="display:flex;flex-direction:column-reverse">
+    <div style="display:flex;flex-direction:column-reverse;max-width:500px;margin:0 auto;">
     ${results.map((l, length) => {
             if (l.length == 0) {
                 return T;
@@ -8296,53 +8284,69 @@ StrictEvolutions = __decorate([
 ], StrictEvolutions);
 
 let AgeView = class AgeView extends s$1 {
-    constructor() {
-        super(...arguments);
-        this.age = 5;
-        this.results = [];
+    constructor(app) {
+        super();
+        this.app = app;
     }
     render() {
+        if (this.app.klines == undefined) {
+            this.app.initialFetchComplete.then(() => this.requestUpdate());
+            return T;
+        }
+        const result = [];
+        for (let length = 1; length < 60; length++) {
+            for (const [pair, klines] of Object.entries(this.app.klines)) {
+                if (klines.length == length) {
+                    if (result[length] === undefined) {
+                        result[length] = [];
+                    }
+                    result[length].push(pair);
+                }
+            }
+        }
+        //   for (let l = 0; l < 100; l++) {
+        // return sortMap(Object.entries(pairs).filter(o => {
+        //   if (argv.equal) {
+        //     return o[1].length <= argv.age
+        //   }
+        //   else {
+        //     return o[1].length < argv.age
+        //   }
+        // })
+        // .map(([pair, o]) => [pair, o.length]), true)
+        //   }
         return p `
-    <p>age (less or equal than ${this.age})</p>
-    <mwc-slider max="100" min="1" step="1" pin markers
-    @change="${e => this.age = e.target.value}"
-    value="${this.age}"></mwc-slider>
-
-    <mwc-button unelevated
-      @click="${() => this.onCalculateClick()}">calculate</mwc-button>
-
-    <div id="results">
-    ${this.results.map(r => {
-            return p `<pair-button name="${r[0]}" value="${round(r[1])}"></pair-button>`;
+    <div style="padding:12px 48px 64px">
+    ${result.map((pairs, length) => {
+            return p `
+      <div style="margin:24px">
+        <span style="font-weight:bold;font-size:24px;margin-right:12px;">${length}</span>
+        ${pairs.map(pairName => p `<span class="tag" @click=${() => { this.app.goToCryptowatch(pairName); }}>${pairName}</span>`)}
+      </div>
+      `;
         })}
     </div>
     `;
     }
-    onCalculateClick() {
-        this.results = ageFunction(window.app.klines, {
-            age: this.age,
-            equal: true
-        });
-    }
 };
-AgeView.styles = [
-    globalStyles
-];
-__decorate([
-    e$3({ type: Number })
-], AgeView.prototype, "age", void 0);
-__decorate([
-    e$3({ type: Array })
-], AgeView.prototype, "results", void 0);
+AgeView.styles = r$3 `
+  .tag {
+    cursor: pointer;
+    padding: 9px;
+    border-radius:3px;
+    background-color:grey;
+    color:white;
+  }
+  `;
 AgeView = __decorate([
     n('age-view')
 ], AgeView);
 
 let VolumeView = class VolumeView extends s$1 {
     render() {
-        if (window.app.rawData === undefined)
+        if (window.app.raw === undefined)
             return T;
-        const volumes = Object.entries(window.app.rawData)
+        const volumes = Object.entries(window.app.raw)
             .map(([pair, klines]) => [pair, parseKlines(klines).map(k => k[volume_index])]);
         const winners = [];
         [6, 5, 4, 3, 2].forEach(width => {
@@ -8435,24 +8439,24 @@ let MonitoringApp = class MonitoringApp extends s$1 {
         @MDCTabBar:activated="${e => {
             this.tabIndex = e.detail.index;
         }}">
+      <mwc-tab label="age"></mwc-tab>
+      <mwc-tab label="strict ascendings"></mwc-tab>
+      <mwc-tab label="strict descendings"></mwc-tab>
+      <mwc-tab label="volumes"></mwc-tab>
       <mwc-tab label="% negatif"></mwc-tab>
       <mwc-tab label="% positif"></mwc-tab>
       <mwc-tab label="chutes (scores)"></mwc-tab>
       <mwc-tab label="montées (scores)"></mwc-tab>
-      <mwc-tab label="strict ascendings"></mwc-tab>
-      <mwc-tab label="strict descendings"></mwc-tab>
-      <mwc-tab label="age"></mwc-tab>
-      <mwc-tab label="volumes"></mwc-tab>
     </mwc-tab-bar>
 
-    <percents-view class="view" ?show="${this.tabIndex === 0}" croissant></percents-view>
-    <percents-view class="view" ?show="${this.tabIndex === 1}"></percents-view>
-    <evolutions-view class="view" ?show="${this.tabIndex === 2}" croissant></evolutions-view>
-    <evolutions-view class="view" ?show="${this.tabIndex === 3}"></evolutions-view>
-    <strict-evolutions .app=${this} class="view" ?show="${this.tabIndex === 4}" ascending></strict-evolutions>
-    <strict-evolutions .app=${this} class="view" ?show="${this.tabIndex === 5}"></strict-evolutions>
-    <age-view class="view" ?show="${this.tabIndex === 6}"></age-view>
-    <volume-view class="view" ?show=${this.tabIndex === 7}></volume-view>
+    <age-view .app=${this} class="view" ?show="${this.tabIndex === 0}"></age-view>
+    <strict-evolutions .app=${this} class="view" ?show="${this.tabIndex === 1}" ascending></strict-evolutions>
+    <strict-evolutions .app=${this} class="view" ?show="${this.tabIndex === 2}"></strict-evolutions>
+    <volume-view class="view" ?show=${this.tabIndex === 3}></volume-view>
+    <percents-view class="view" ?show="${this.tabIndex === 4}" croissant></percents-view>
+    <percents-view class="view" ?show="${this.tabIndex === 5}"></percents-view>
+    <evolutions-view class="view" ?show="${this.tabIndex === 6}" croissant></evolutions-view>
+    <evolutions-view class="view" ?show="${this.tabIndex === 7}"></evolutions-view>
     `;
     }
     // private removeIncompleteLastDay(remove: boolean) {
@@ -8479,6 +8483,10 @@ let MonitoringApp = class MonitoringApp extends s$1 {
     updateViews() {
         this.volumeView.requestUpdate();
         this.requestUpdate();
+    }
+    goToCryptowatch(pair) {
+        const { s: symbol, q: quote } = getPairsNameObjectFromName(this.binancePairs, pair);
+        goToCryptowatch(symbol, quote);
     }
 };
 MonitoringApp.styles = r$3 `
