@@ -6,7 +6,7 @@ import './percents-view'
 import './evolutions-view'
 import '@material/mwc-formfield'
 import '@material/mwc-checkbox'
-import {Checkbox} from '@material/mwc-checkbox'
+import ms from 'ms';
 // import data from '../../dumps/pairs-klines.json'
 import { convertPairsKlinesToPairsKobjects, getCandidatePairs, PairsKobjects, PairName, popLastUnit, PairsKlines, getPairsNameObjectFromName } from '../pairs';
 import { filterPairsKlinesFromCandidates } from '../filters';
@@ -16,6 +16,7 @@ import './strict-evolutions'
 import './age-view'
 import './volume-view'
 import { VolumeView } from './volume-view'
+import { PercentsView } from './percents-view'
 
 declare global {
   interface Window {
@@ -91,29 +92,30 @@ export class MonitoringApp extends LitElement {
 
   render () {
     return html`
-    <div style="display:flex;align-items:center;justify-content:space-between">
+    <div style="display:flex;align-items:start;justify-content:space-between">
       <mwc-textfield label="assets" value="${this.assets.join(',')}"
         helper="pairs available: ${this.binancePairs.length}"
         helperPersistent
-        @change="${() => this.onAssetsChange()}"></mwc-textfield>
-      <mwc-formfield label="remove incomplete current day">
+        @change="${() => this.onAssetsChange()}"
+      ></mwc-textfield>
+      <mwc-formfield label="Do not include today" style="direction:rtl">
         <mwc-checkbox
           @change=${(e) => {this.removeLastDay = e.target.checked; this.updateData()}}></mwc-checkbox>
       </mwc-formfield>
     </div>
 
-    <div style="margin: 24px 0">Last update : ${new Date(this.fetchInfos?.date || 0)} (${this.fetchInfos?.width}${this.fetchInfos?.unit})</div>
+    <div style="margin:24px 12px;cursor:informations" title="${(new Date(this.fetchInfos?.date || 0)).toString()}">Last update: ${ms(Date.now() - (this.fetchInfos?.date || 0))} ago / Unit : ${this.fetchInfos?.width}${this.fetchInfos?.unit}</div>
 
     <mwc-tab-bar style="margin: 30px 0;"
         @MDCTabBar:activated="${e => {
           this.tabIndex = e.detail.index
         }}">
       <mwc-tab label="age"></mwc-tab>
-      <mwc-tab label="strict ascendings"></mwc-tab>
-      <mwc-tab label="strict descendings"></mwc-tab>
-      <mwc-tab label="volumes"></mwc-tab>
-      <mwc-tab label="% negatif"></mwc-tab>
-      <mwc-tab label="% positif"></mwc-tab>
+      <mwc-tab label="" icon="trending_up" style="--mdc-tab-text-label-color-default:green;--mdc-tab-color-default:green"></mwc-tab>
+      <mwc-tab label="" icon="trending_down" style="--mdc-tab-text-label-color-default:red;--mdc-tab-color-default:red"></mwc-tab>
+      <mwc-tab label="" icon="equalizer"></mwc-tab>
+      <mwc-tab label="%" icon="trending_up" style="--mdc-tab-text-label-color-default:green;--mdc-tab-color-default:green"></mwc-tab>
+      <mwc-tab label="%" icon="trending_down" style="--mdc-tab-text-label-color-default:red;--mdc-tab-color-default:red"></mwc-tab>
       <mwc-tab label="chutes (scores)"></mwc-tab>
       <mwc-tab label="montées (scores)"></mwc-tab>
     </mwc-tab-bar>
@@ -122,8 +124,8 @@ export class MonitoringApp extends LitElement {
     <strict-evolutions .app=${this} class="view" ?show="${this.tabIndex === 1}" ascending></strict-evolutions>
     <strict-evolutions .app=${this} class="view" ?show="${this.tabIndex === 2}"></strict-evolutions>
     <volume-view class="view" ?show=${this.tabIndex === 3}></volume-view>
-    <percents-view class="view" ?show="${this.tabIndex === 4}" croissant></percents-view>
-    <percents-view class="view" ?show="${this.tabIndex === 5}"></percents-view>
+    <percents-view .app=${this} class="view" ?show="${this.tabIndex === 4}"></percents-view>
+    <percents-view .app=${this} class="view" ?show="${this.tabIndex === 5}" croissant></percents-view>
     <evolutions-view class="view" ?show="${this.tabIndex === 6}" croissant></evolutions-view>
     <evolutions-view class="view" ?show="${this.tabIndex === 7}"></evolutions-view>
     `
@@ -168,6 +170,12 @@ export class MonitoringApp extends LitElement {
   goToCryptowatch(pair: any) {
     const {s: symbol, q: quote} = getPairsNameObjectFromName(this.binancePairs, pair)!
     goToCryptowatch(symbol, quote)
+  }
+
+  protected updated(_changedProperties: Map<string | number | symbol, unknown>): void {
+    if (_changedProperties.has('tabIndex')) {
+      this.shadowRoot!.querySelectorAll<PercentsView>('percents-view').forEach((el) => el.layoutSlider())
+    }
   }
 
   // requestUpdate(name?: PropertyKey, oldValue?: unknown, options?: PropertyDeclaration<unknown, unknown>): void {
