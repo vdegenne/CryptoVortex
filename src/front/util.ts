@@ -20,6 +20,10 @@ export async function fetchLocalPairsKlines() {
   return await (await fetch('./dumps/pairs-klines.json')).json()
 }
 
+export function buildCryptoWatchUrl (base: string, quote: string = 'USDT') {
+  return `https://cryptowat.ch/charts/BINANCE:${base}-${quote}`
+}
+
 export function goToCryptowatch (base: string, quote: string) {
-  window.open(`https://cryptowat.ch/charts/BINANCE:${base}-${quote}`, '_blank')
+  window.open(buildCryptoWatchUrl(base, quote), '_blank')
 }

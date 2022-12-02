@@ -6,6 +6,7 @@ import './percents-view'
 import './evolutions-view'
 import '@material/mwc-formfield'
 import '@material/mwc-checkbox'
+import '@material/mwc-icon-button'
 import ms from 'ms';
 // import data from '../../dumps/pairs-klines.json'
 import { convertPairsKlinesToPairsKobjects, getCandidatePairs, PairsKobjects, PairName, popLastUnit, PairsKlines, getPairsNameObjectFromName } from '../pairs';
@@ -17,6 +18,8 @@ import './age-view'
 import './volume-view'
 import { VolumeView } from './volume-view'
 import { PercentsView } from './percents-view'
+import './note-pad.js'
+import { NotePad } from './note-pad.js'
 
 declare global {
   interface Window {
@@ -30,7 +33,7 @@ export class MonitoringApp extends LitElement {
   public rawData?: PairsKlines;
   public klines?: PairsKobjects;
 
-  private fetchInfos!: { date: number, unit: string, width: number };
+  fetchInfos!: { date: number, unit: string, width: number };
 
   private assets = ['USDT']
   private removeLastDay = false;
@@ -45,6 +48,7 @@ export class MonitoringApp extends LitElement {
 
   @query('mwc-textfield[label=assets]') assetsTextField!: TextField;
   @query('volume-view') volumeView!: VolumeView;
+  @query('note-pad') notepad!: NotePad;
 
   constructor() {
     super()
@@ -73,7 +77,7 @@ export class MonitoringApp extends LitElement {
   static styles = css`
   :host {
     display: block;
-    /* max-width: 800px; */
+    max-width: 800px;
     margin: 0 auto;
   }
   mwc-tab-bar {
@@ -88,25 +92,37 @@ export class MonitoringApp extends LitElement {
     overflow: initial;
     height: initial;
   }
+  #info > div {
+    margin: 4px 0;
+  }
+  #info b {
+    font-weight: normal;
+    text-decoration: underline;
+  }
   `
 
   render () {
     return html`
-    <div style="display:flex;align-items:start;justify-content:space-between">
+    <div style="display:flex;align-items:center;justify-content:space-between">
       <mwc-textfield label="assets" value="${this.assets.join(',')}"
-        helper="pairs available: ${this.binancePairs.length}"
-        helperPersistent
         @change="${() => this.onAssetsChange()}"
       ></mwc-textfield>
-      <mwc-formfield label="Do not include today" style="direction:rtl">
+      <mwc-formfield label="Do not include today">
         <mwc-checkbox
           @change=${(e) => {this.removeLastDay = e.target.checked; this.updateData()}}></mwc-checkbox>
       </mwc-formfield>
     </div>
 
-    <div style="margin:24px 12px;cursor:informations" title="${(new Date(this.fetchInfos?.date || 0)).toString()}">Last update: ${ms(Date.now() - (this.fetchInfos?.date || 0))} ago / Unit : ${this.fetchInfos?.width}${this.fetchInfos?.unit}</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin: 24px 12px;">
+      <div id="info">
+        <div style="cursor:informations" title="${(new Date(this.fetchInfos?.date || 0)).toString()}"><b>Last update:</b> ${ms(Date.now() - (this.fetchInfos?.date || 0))} ago</div>
+        <div><b>Unit:</b> ${this.fetchInfos?.width}${this.fetchInfos?.unit.toLocaleUpperCase()}</div>
+        <div><b>Pairs available:</b> ${this.binancePairs.length}</div>
+      </div>
+      <mwc-icon-button icon="history_edu" @click=${()=>{this.notepad.show()}}></mwc-icon-button>
+    </div>
 
-    <mwc-tab-bar style="margin: 30px 0;"
+    <mwc-tab-bar style="margin:12px 0;"
         @MDCTabBar:activated="${e => {
           this.tabIndex = e.detail.index
         }}">
@@ -128,6 +144,8 @@ export class MonitoringApp extends LitElement {
     <percents-view .app=${this} class="view" ?show="${this.tabIndex === 5}" croissant></percents-view>
     <evolutions-view class="view" ?show="${this.tabIndex === 6}" croissant></evolutions-view>
     <evolutions-view class="view" ?show="${this.tabIndex === 7}"></evolutions-view>
+
+    <note-pad></note-pad>
     `
   }
 

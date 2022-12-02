@@ -50,7 +50,7 @@ export class PercentsView extends LitElement {
       <p>Length</p>
       <mwc-slider
         pin markers discrete withTickMarks
-        max=100 min=1 step=1
+        max=${this.app.fetchInfos.width} min=1 step=1
         @change=${e => this.length = e.target.value}
         value="${this.length}"></mwc-slider>
 
