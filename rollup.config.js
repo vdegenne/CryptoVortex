@@ -2,6 +2,8 @@ import typescript from '@rollup/plugin-typescript';
 import nodeResolve from '@rollup/plugin-node-resolve';
 // import json from '@rollup/plugin-json'
 import cjs from '@rollup/plugin-commonjs'
+import terser from '@rollup/plugin-terser';
+
 
 export default {
   input: 'src/front/monitoring-app.ts',
@@ -10,6 +12,7 @@ export default {
     typescript({ sourceMap: true }),
     cjs(),
     nodeResolve(),
-  // json()
+  // json(),
+    terser()
   ]
 }
