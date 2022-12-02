@@ -41,7 +41,7 @@ export class NotePad extends LitElement {
 
   render () {
     return html`
-    <mwc-dialog heading=Note open style="--mdc-dialog-min-width:calc(100vw - 24px)">
+    <mwc-dialog heading=Note style="--mdc-dialog-min-width:calc(100vw - 24px)">
       <mwc-textarea style="width:100%" outlined rows=24 ?hide=${this.locked}
         value=${this.content}
         @keydown=${this.onKeyDown}
@@ -52,7 +52,7 @@ export class NotePad extends LitElement {
 
       <mwc-icon-button icon=${this.locked?'lock':'lock_open'} slot="secondaryAction"
         @click=${()=>{this.locked=!this.locked}}></mwc-icon-button>
-      <mwc-button outlined slot="primaryAction">close</mwc-button>
+      <mwc-button outlined slot="primaryAction" dialogAction="close">close</mwc-button>
     </mwc-dialog>
     `
   }

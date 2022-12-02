@@ -13,6 +13,6 @@ export default {
     cjs(),
     nodeResolve(),
   // json(),
-    terser()
+    process.env.minify ? terser() : {},
   ]
 }

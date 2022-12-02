@@ -1340,7 +1340,7 @@ const Rr=l`.mdc-text-field{height:100%}.mdc-text-field__input{resize:none}`
  * Copyright 2019 Google LLC
  * SPDX-License-Identifier: Apache-2.0
  */;let Ir=class extends Cr{};Ir.styles=[Xe,Rr],Ir=r([rt("mwc-textarea")],Ir);let Lr=class extends et{constructor(){super(),this.locked=!0,this.content="",this.loadContent()}loadContent(){const t=localStorage.getItem("cryptovortex:note");t&&(this.content=t)}render(){return N`
-    <mwc-dialog heading=Note open style="--mdc-dialog-min-width:calc(100vw - 24px)">
+    <mwc-dialog heading=Note style="--mdc-dialog-min-width:calc(100vw - 24px)">
       <mwc-textarea style="width:100%" outlined rows=24 ?hide=${this.locked}
         value=${this.content}
         @keydown=${this.onKeyDown}
@@ -1351,7 +1351,7 @@ const Rr=l`.mdc-text-field{height:100%}.mdc-text-field__input{resize:none}`
 
       <mwc-icon-button icon=${this.locked?"lock":"lock_open"} slot="secondaryAction"
         @click=${()=>{this.locked=!this.locked}}></mwc-icon-button>
-      <mwc-button outlined slot="primaryAction">close</mwc-button>
+      <mwc-button outlined slot="primaryAction" dialogAction="close">close</mwc-button>
     </mwc-dialog>
     `}unsafeHTML(t){return br(t.replaceAll(/(#[^\s]+)/g,(t=>`<a href="${Vi(t.slice(1))}" target="_blank">${t}</a>`)))}onKeyDown(){this.content=this.textarea.value,this.save()}save(){localStorage.setItem("cryptovortex:note",this.textarea.value)}show(){this.dialog.show()}};Lr.styles=l`
   [hide] {
