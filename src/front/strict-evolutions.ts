@@ -44,7 +44,7 @@ export class StrictEvolutions extends LitElement {
     }
 
     return html`
-    <div style="display:flex;flex-direction:column-reverse;max-width:500px;margin:0 auto;">
+    <div style="display:flex;flex-direction:column-reverse;max-width:700px;margin:0 auto;">
     ${results.map((l, length) => {
       if (l.length == 0) { return nothing }
       return html`

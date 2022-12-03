@@ -7,59 +7,61 @@ import { pairsEvolutions } from "../monitoring-functions";
 import './pair-button'
 import { Map } from "../maps";
 import { round } from "../util";
-import { customElement, property } from 'lit/decorators.js';
-import { html, LitElement } from 'lit';
+import { customElement, property, state } from 'lit/decorators.js';
+import { html, LitElement, nothing } from 'lit';
+import { MonitoringApp } from './monitoring-app.js';
 
 @customElement('percents-view')
 export class PercentsView extends LitElement {
+  private app: MonitoringApp;
+
   @property({type:Boolean,reflect:true})
   private croissant = false;
 
-  @property({type: Number})
-  private days = 5;
+  @state()
+  private length = 100;
 
-  @property({type: Number})
-  private size = 10;
+  // @property({type:Array})
+  // private results: Map = [];
 
-  @property({type:Array})
-  private results: Map = [];
+  // static styles = [
+  //   globalStyles
+  // ]
 
-  static styles = [
-    globalStyles
-  ]
+  constructor (app: MonitoringApp) {
+    super()
+    this.app = app;
+  }
 
   render () {
+    if (this.app.klines == undefined) {
+      this.app.initialFetchComplete.then(() => this.requestUpdate())
+      return nothing;
+    }
+
+    const results = pairsEvolutions(this.app.klines, {
+      days: this.length,
+      size: 1000,
+      croissant: this.croissant
+    })
+
     return html`
-    <div class="flex">
-      <span>Days</span><mwc-icon title="nombre de bougies (à partir du jour actuel)">help_outline</mwc-icon>
-    </div>
-    <mwc-slider max="100" min="1" step="1" pin markers
-      @change="${e => this.days = e.target.value}"
-      value="${this.days}"></mwc-slider>
+    <div style="max-width:700px;margin:0 auto">
+      <p>Length</p>
+      <mwc-slider
+        pin markers discrete withTickMarks
+        max=${this.app.fetchInfos.width} min=1 step=1
+        @change=${e => this.length = e.target.value}
+        value="${this.length}"></mwc-slider>
 
-    <div class="flex">
-      <span>Size</span><mwc-icon title="Taille de la liste finale">help_outline</mwc-icon>
-    </div>
-    <mwc-slider max="40" min="1" step="1" pin markers
-      @change="${(e) => this.size = e.target.value}"
-      value="${this.size}"></mwc-slider>
-
-    <mwc-button unelevated
-      @click="${() => this.onCalculateClick()}">calculate</mwc-button>
-
-    <div id="results">
-    ${this.results.map(r => {
-      return html`<pair-button name="${r[0]}" value="${round(r[1])}%" colors></pair-button>`
-    })}
+      ${results.map(r => {
+        return html`<pair-button name="${r[0]}" value="${round(r[1])}%" colors></pair-button>`
+      })}
     </div>
     `
   }
 
-  private onCalculateClick() {
-    this.results = pairsEvolutions(window.app.klines!, {
-      days: this.days,
-      size: this.size,
-      croissant: this.croissant
-    })
+  layoutSlider () {
+    this.shadowRoot!.querySelector(`mwc-slider`)?.layout()
   }
 }

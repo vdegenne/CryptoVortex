@@ -18,9 +18,9 @@ export class VolumeView extends LitElement {
   `
 
   render () {
-    if (window.app.raw === undefined) return nothing
+    if (window.app.rawData === undefined) return nothing
 
-    const volumes = Object.entries(window.app.raw)
+    const volumes = Object.entries(window.app.rawData)
       .map<[string, number[]]>(([pair, klines]) => [pair, parseKlines(klines).map(k => k[volume_index])])
 
     const winners: string[][] = []
@@ -28,7 +28,7 @@ export class VolumeView extends LitElement {
       winners[width] = volumes.filter(([_, vols]) => {
         const progressive = JSON.stringify(vols.slice(-width)) === JSON.stringify(vols.slice(-width).sort((a, b) => a - b))
         if (progressive) {
-          console.log(JSON.stringify(vols.slice(-width)), JSON.stringify(vols.slice(-width).sort((a, b) => a - b)))
+          // console.log(JSON.stringify(vols.slice(-width)), JSON.stringify(vols.slice(-width).sort((a, b) => a - b)))
         }
         return progressive
       })

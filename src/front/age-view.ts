@@ -1,9 +1,5 @@
 import { css, html, LitElement, nothing } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { Map } from '../maps'
-import { ageFunction } from "../monitoring-functions";
-import { round } from "../util";
-import globalStyles from "./globalStyles";
 import { MonitoringApp } from './monitoring-app.js';
 
 @customElement('age-view')
@@ -33,7 +29,7 @@ export class AgeView extends LitElement {
 
     const result: string[][] = []
 
-    for (let length = 1; length < 60; length++) {
+    for (let length = 1; length < this.app.fetchInfos.width; length++) {
       for (const [pair, klines] of Object.entries(this.app.klines)) {
         if (klines.length == length) {
           if (result[length] === undefined) {

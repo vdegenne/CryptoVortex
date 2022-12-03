@@ -41,7 +41,7 @@ export class PairButton extends LitElement {
 
   render () {
     return html`
-    <div id="name">${this.name}</div>
+    <div id="name" style="background:white">${this.name}</div>
     <div id="value" ?colors="${this.colors}" ?greater="${parseInt(this.value) > 0}">${this.value}</div>
     `
   }
