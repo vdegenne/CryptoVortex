@@ -1,6 +1,9 @@
 import { Klines } from "./klines";
 import fs from 'fs'
 
+import * as url from 'url';
+// const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
+
 export function savePairInformation (pair: string, data: Klines) {
   // return new Promise(resolve => {
     fs.writeFileSync(`${__dirname}/../data/${pair}.json`, JSON.stringify(data))

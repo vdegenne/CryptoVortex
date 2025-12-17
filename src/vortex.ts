@@ -1,6 +1,4 @@
-#!./node_modules/.bin/ts-node
-
-import fs from 'fs'
+import * as fs from 'fs'
 import yargs from 'yargs';
 import { buildPairsFromClassement, getPairsKlinesVolumeClassement } from './classements';
 import { convertPairsKlinesToPairsKobjects, getCandidatePairs, PairsKlines } from "./pairs";
@@ -13,6 +11,9 @@ import ms from 'ms'
 import _pairsNames from '../dumps/binance-pairs.json'
 let pairsNames = _pairsNames
 import path from 'path'
+
+import * as url from 'url';
+// const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 
 export type Dump = {
   [pair: string]: [string, number, number][]
